@@ -1,20 +1,24 @@
-import os, glob
-from dotenv import load_dotenv
+# Import external modules
+import os
 from pathlib import Path
 
+# Import self-made modules
+from utils import define_directories, load_env_file, is_a_file_an_image, save_results_to_file
+
+# Import Azure SDK modules
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.documentintelligence import DocumentIntelligenceClient
 from azure.ai.documentintelligence.models import AnalyzeDocumentRequest
 from azure.core.exceptions import HttpResponseError
 
-# Point to the .env file in the parent directory
-env_path = Path(__file__).resolve().parent.parent / '.env'
-load_dotenv(dotenv_path=env_path)
+# Load environment variables
+load_env_file()
 
-# Access azure api
+# Access Azure Document Intelligence API key and endpoint from environment variables
 api_key = os.getenv("DOCUMENTINTELLIGENCE_API_KEY")
 endpoint = os.getenv("DOCUMENTINTELLIGENCE_ENDPOINT")
 
+# Check if the API key and endpoint are set
 if not api_key or not endpoint:
     print("DOCUMENTINTELLIGENCE_API_KEY or DOCUMENTINTELLIGENCE_ENDPOINT is not set in the .env file.")
     exit(1)
@@ -26,33 +30,26 @@ if not api_key or not endpoint:
 # https://github.com/Azure-Samples/document-intelligence-code-samples/blob/main/Python(v4.0)/Read_model/sample_analyze_read.py
 
 def analyse_read():
+    # Create a Document Intelligence client
+    print("Connecting to Azure Document Intelligence service...\n")
     document_intelligence_client = DocumentIntelligenceClient(
         endpoint=endpoint, credential=AzureKeyCredential(api_key)
     )
 
-    # Define the directory containing images and the results directory
-    images_dir = Path(__file__).resolve().parent.parent / 'images'
-    image_files = glob.glob(str(images_dir / '*'))  # Get all files in the images directory
-    results_dir = Path(__file__).resolve().parent.parent / 'results' / 'azure'
-    results_dir.mkdir(parents=True, exist_ok=True)  # Create results directory if it doesn't exist
-
-    if not image_files:
-        print(f"No images found in {images_dir}")
-        return
+    # Define directories and get image files
+    images_dir, image_files, results_dir = define_directories('azure')
 
     print('---------- Azure service analysis started ----------')
 
     for image_path in image_files:
-        image_file = Path(image_path)
-
         # Check if the file is an image
-        if not image_file.suffix.lower() in ['.png', '.jpg', '.jpeg']:
-            print(f"Skipping {image_file.name}, not a supported image format.")
+        if not is_a_file_an_image(image_path):
+            print(f"\nSkipping {Path(image_path).name}, not a supported image format.")
             continue
 
-        file_name = image_file.stem  # Get the file name without extension
-        result_file = results_dir / f"azure-{file_name}.txt"
-        print(f"\nAnalysing {file_name} by Azure service...")
+        print(f"\nAnalysing {Path(image_path).name} by Azure service...")
+
+        # Open the image file and send it to the Azure Document Intelligence service
         with open(image_path, 'rb') as f:
             poller = document_intelligence_client.begin_analyze_document(
                 "prebuilt-read", f
@@ -66,14 +63,11 @@ def analyse_read():
                 lines.append(line.content)
 
         # Save recognised text to file
-        with open(result_file, 'w', encoding='utf-8') as out_f:
-            out_f.write('\n'.join(lines))
-        print(f"Saved recognised text to {result_file}")
+        save_results_to_file('azure', '\n'.join(lines), Path(image_path).stem, results_dir)
 
     print('\n---------- Azure service analysis finished ----------')
 
 if __name__ == "__main__":
-
     try:
         analyse_read()
     except HttpResponseError as error:

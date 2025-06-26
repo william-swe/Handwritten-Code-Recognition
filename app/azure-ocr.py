@@ -30,6 +30,12 @@ if not api_key or not endpoint:
 # https://github.com/Azure-Samples/document-intelligence-code-samples/blob/main/Python(v4.0)/Read_model/sample_analyze_read.py
 
 def analyse_read():
+    """
+    Function to analyse images using Azure Document Intelligence service.
+    It connects to the Azure service, retrieves images from a specified directory,
+    and sends them to the Azure Document Intelligence API for text recognition.
+    The results are saved to a file in a specified results directory.
+    """
     # Create a Document Intelligence client
     print("Connecting to Azure Document Intelligence service...\n")
     document_intelligence_client = DocumentIntelligenceClient(
@@ -38,6 +44,10 @@ def analyse_read():
 
     # Define directories and get image files
     images_dir, image_files, results_dir = define_directories('azure')
+
+    if not image_files:
+        print("No images found in the directory.")
+        return
 
     print('---------- Azure service analysis started ----------')
 

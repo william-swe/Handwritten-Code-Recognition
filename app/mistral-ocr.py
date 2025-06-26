@@ -27,13 +27,22 @@ if not api_key:
 # https://colab.research.google.com/github/mistralai/cookbook/blob/main/mistral/ocr/structured_ocr.ipynb
 
 def analyse_read():
-
+    """
+    Function to analyse images using Mistral AI service.
+    It connects to the Mistral service, retrieves images from a specified directory,
+    and sends them to the Mistral API for text recognition.
+    The results are saved to a file in a specified results directory.
+    """
     # Create a Mistral client
     print("Connecting to Mistral AI service...\n")
     client = Mistral(api_key=api_key)
     
     # Define directories and get image files
     images_dir, image_files, results_dir = define_directories('mistral')
+
+    if not image_files:
+        print("No images found in the directory.")
+        return
 
     print('---------- Mistral AI service analysis started ----------')
 
@@ -44,7 +53,7 @@ def analyse_read():
             continue
 
         print(f"\nAnalysing {Path(image_path).name} by Mistral AI service...")
-        
+
         # Encode image as base64 for API
         encoded = base64.b64encode(Path(image_path).read_bytes()).decode()
         base64_data_url = f"data:image/jpeg;base64,{encoded}"

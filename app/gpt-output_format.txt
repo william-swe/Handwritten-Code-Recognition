@@ -1,0 +1,13 @@
+The text in the image is as follows:
+
+---
+
+**Mistral OCR Models**
+
+Mistral OCR offers several models, including the latest version, mistral-ocr-latest, which currently points to mistral-ocr-2505. Additionally, there is the mistral-ocr-2503 model, which is set to be deprecated on 2025/06/10 and retired on 2026/03/31, with an alternative model being mistral-ocr-latest. The Mistral OCR 2 model is also available, which is part of the premier models and is used to extract interleaved text and images.
+
+Other models include the Mistral Small 3.1 and Mistral Small 3, which are open models with image understanding capabilities and are part of the small models category. These models are not specifically for OCR but are part of Mistral's broader model offerings.
+
+For users looking to use Mistral OCR, there are different ways to interact with the models, including using the Mistral Document AI API, which includes a Document OCR processor powered by the latest OCR model. The API allows for the extraction of text and structured content from PDF documents, returning extracted text content, images, bboxes, and metadata about the document structure.
+
+---

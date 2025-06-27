@@ -19,17 +19,16 @@ if not api_key:
     print("OPENAI_API_KEY is not set in the .env file.")
     exit(1)
 
-OpenAI.api_key = api_key
+# Create an OpenAI client
+client = OpenAI(api_key=api_key)
 
-# THE BELOW CODE IS ADOPTED FROM OPENAI GUIDELINE:
+# THE BELOW CODE IS ADAPTED FROM OPENAI GUIDELINE:
 # https://platform.openai.com/docs/guides/images-vision?api-mode=responses&format=url
 
 # Function to encode the image
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode("utf-8")
-
-client = OpenAI()
 
 def analyse_read():
     """
@@ -65,12 +64,12 @@ def analyse_read():
             model="gpt-4o-mini",
             input=[
                 {
-                    "role": "system", "content": "You are an OCR assistant."
+                    "role": "system", "content": "You are a perfect OCR assistant."
                 },
                 {
                     "role": "user",
                     "content": [
-                        {"type": "input_text", "text": "Please transcribe the handwritten text in this image."},
+                        {"type": "input_text", "text": "Please transcribe this text. Only output the text and nothing else."},
                         {
                             "type": "input_image",
                             "image_url": f"data:image/png;base64,{base64_image}",

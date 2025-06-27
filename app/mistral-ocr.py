@@ -21,9 +21,8 @@ if not api_key:
     print("MISTRAL_API_KEY is not set in the .env file.")
     exit(1)
 
-# print('api_key:', api_key)
 
-# THE BELOW CODE IS ADOPTED FROM Mistral AI GUIDELINE:
+# THE BELOW CODE IS ADAPTED FROM Mistral AI GUIDELINE:
 # https://colab.research.google.com/github/mistralai/cookbook/blob/main/mistral/ocr/structured_ocr.ipynb
 
 def analyse_read():

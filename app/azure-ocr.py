@@ -23,10 +23,7 @@ if not api_key or not endpoint:
     print("DOCUMENTINTELLIGENCE_API_KEY or DOCUMENTINTELLIGENCE_ENDPOINT is not set in the .env file.")
     exit(1)
 
-# print('api_key:', api_key)
-# print('endpoint:', endpoint)
-
-# THE BELOW CODE IS ADOPTED FROM AZURE DOCUMENT INTELLIGENCE GUIDELINE:
+# THE BELOW CODE IS ADAPTED FROM AZURE DOCUMENT INTELLIGENCE GUIDELINE:
 # https://github.com/Azure-Samples/document-intelligence-code-samples/blob/main/Python(v4.0)/Read_model/sample_analyze_read.py
 
 def analyse_read():

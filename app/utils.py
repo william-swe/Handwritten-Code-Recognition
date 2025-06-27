@@ -27,7 +27,7 @@ def define_directories(ocr_name):
     from pathlib import Path
 
     # Define the directories
-    images_dir = Path(__file__).resolve().parent.parent / 'images'
+    images_dir = Path(__file__).resolve().parent.parent / 'images/compressed'
     image_files = glob.glob(str(images_dir / '*'))  # Get all files in the images directory
     results_dir = Path(__file__).resolve().parent.parent / 'results' / ocr_name
     results_dir.mkdir(parents=True, exist_ok=True)  # Create results directory if it doesn't exist

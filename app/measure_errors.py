@@ -38,6 +38,7 @@ def get_average_normalized_levenshtein(service_name: str):
             # Calculate the normalised Levenshtein distance
             # The higher the value, the better the match
             nld = 1 - Levenshtein.distance(gt_text, ocr_text) / max(len(gt_text), len(ocr_text))
+            # print(f'Levenshtein distance for {result_file.name} vs {gt_file.name}: {Levenshtein.distance(gt_text, ocr_text)}')
         nld_list.append(nld)
         print(f'NLD for {result_file.name} vs {gt_file.name}: {nld:.4f}')
     if nld_list:

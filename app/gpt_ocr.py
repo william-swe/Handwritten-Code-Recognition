@@ -3,7 +3,7 @@ import os, base64
 from pathlib import Path
 
 # Import self-made modules
-from utils import OcrService, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
+from utils import OcrService, SKIP_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
 
 # Import OpenAI modules
 from openai import OpenAI
@@ -46,8 +46,11 @@ def analyse_read():
     # Define directories and get image files
     images_dir, image_files, results_dir = define_directories(SERVICE)
     
+    # Only process images not in SKIP_OCR_IMAGES
+    image_files = [f for f in image_files if Path(f).name not in SKIP_OCR_IMAGES]
+
     if not image_files:
-        print("No images found in the directory.")
+        print(f"No images found in {images_dir}.")
         return
 
     print('---------- OpenAI service analysis started ----------')

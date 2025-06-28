@@ -6,6 +6,11 @@ class OcrService(StrEnum):
     OPENAI = 'gpt'
     ANTHROPIC = 'claude'
 
+# Tuple of compressed image names to skip for OCR (manually input)
+SKIP_OCR_IMAGES = (
+    'logic_4_comp.png', 'syntax_1_comp.png'
+)
+
 def load_env_file():
     '''
     Load environment variables from a .env file located in the parent directory.

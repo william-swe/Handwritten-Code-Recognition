@@ -1,3 +1,11 @@
+from enum import StrEnum
+
+class OcrService(StrEnum):
+    AZURE = 'azure'
+    MISTRAL = 'mistral'
+    OPENAI = 'gpt'
+    ANTHROPIC = 'claude'
+
 def load_env_file():
     '''
     Load environment variables from a .env file located in the parent directory.
@@ -59,7 +67,7 @@ def save_results_to_file(ocr_name, results, file_name, results_dir):
     Returns:
         None
     '''
-    result_file_path = results_dir / f"{ocr_name}-{file_name}.txt"
+    result_file_path = results_dir / f"{ocr_name}_{file_name}.txt"
     with open(result_file_path, 'w', encoding='utf-8') as f:
         f.write(results)
     print(f"Results saved to {result_file_path}")

@@ -19,7 +19,7 @@ def compress_images():
         try:
             img = Image.open(image_file)
             img.thumbnail(max_size, Image.LANCZOS)
-            out_path = compressed_dir / image_file.name
+            out_path = compressed_dir / (image_file.name + '_comp')
             # For JPEG, use quality option; for PNG, use optimize
             if image_file.suffix.lower() in ['.jpg', '.jpeg']:
                 img.save(out_path, 'JPEG', quality=40, optimize=True)

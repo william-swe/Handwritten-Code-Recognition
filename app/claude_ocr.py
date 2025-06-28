@@ -3,10 +3,13 @@ import os, base64
 from pathlib import Path
 
 # Import self-made modules
-from utils import define_directories, load_env_file, is_a_file_an_image, save_results_to_file
+from utils import OcrService, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
 
-# Import Claude SDK modules
+# Import Anthropic SDK modules
 from anthropic import Anthropic
+
+# Define the OCR service being used
+SERVICE = OcrService.ANTHROPIC
 
 # Load environment variables
 load_env_file()
@@ -19,7 +22,7 @@ if not api_key:
     print("CLAUDE_API_KEY is not set in the .env file.")
     exit(1)
 
-# THE BELOW CODE IS ADAPTED FROM CLAUDE GUIDELINE:
+# THE BELOW CODE IS ADAPTED FROM ANTHROPIC GUIDELINE:
 # https://github.com/anthropics/anthropic-cookbook/blob/main/multimodal/how_to_transcribe_text.ipynb
 
 def get_base64_encoded_image(image_path):
@@ -42,7 +45,7 @@ def analyse_read():
     MODEL_NAME = "claude-3-5-haiku-20241022"  # Specify the model to use
 
     # Define directories and get image files
-    images_dir, image_files, results_dir = define_directories('claude')
+    images_dir, image_files, results_dir = define_directories(SERVICE)
 
     if not image_files:
         print("No images found in the directory.")
@@ -77,7 +80,7 @@ def analyse_read():
         )
 
         # Save recognised text to file
-        save_results_to_file('claude', response.content[0].text, Path(image_path).stem, results_dir)
+        save_results_to_file(SERVICE, response.content[0].text, Path(image_path).stem, results_dir)
 
     print('\n---------- Claude service analysis finished ----------')
 

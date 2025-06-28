@@ -3,10 +3,13 @@ import os, base64
 from pathlib import Path
 
 # Import self-made modules
-from utils import define_directories, load_env_file, is_a_file_an_image, save_results_to_file
+from utils import OcrService, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
 
 # Import OpenAI modules
 from openai import OpenAI
+
+# Define the OCR service being used
+SERVICE = OcrService.OPENAI
 
 # Load environment variables
 load_env_file()
@@ -41,7 +44,7 @@ def analyse_read():
     print("Connecting to OpenAI service...\n")
 
     # Define directories and get image files
-    images_dir, image_files, results_dir = define_directories('gpt')
+    images_dir, image_files, results_dir = define_directories(SERVICE)
     
     if not image_files:
         print("No images found in the directory.")
@@ -80,7 +83,7 @@ def analyse_read():
         )
 
         # Save recognised text to file
-        save_results_to_file('gpt', response.output_text, Path(image_path).stem, results_dir)
+        save_results_to_file(SERVICE, response.output_text, Path(image_path).stem, results_dir)
 
     print('\n---------- OpenAI service analysis finished ----------')
 

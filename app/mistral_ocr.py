@@ -5,10 +5,13 @@ from markdown import markdown
 from bs4 import BeautifulSoup
 
 # Import self-made modules
-from utils import define_directories, load_env_file, is_a_file_an_image, save_results_to_file
+from utils import OcrService, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
 
 # Import Mistral AI modules
 from mistralai import Mistral, ImageURLChunk
+
+# Define the OCR service being used
+SERVICE = OcrService.MISTRAL
 
 # Load environment variables
 load_env_file()
@@ -37,7 +40,7 @@ def analyse_read():
     client = Mistral(api_key=api_key)
     
     # Define directories and get image files
-    images_dir, image_files, results_dir = define_directories('mistral')
+    images_dir, image_files, results_dir = define_directories(SERVICE)
 
     if not image_files:
         print("No images found in the directory.")
@@ -76,7 +79,7 @@ def analyse_read():
         plain_text = '\n'.join(plain_text_pages)
 
         # Save recognised text to file
-        save_results_to_file('mistral', plain_text, Path(image_path).stem, results_dir)
+        save_results_to_file(SERVICE, plain_text, Path(image_path).stem, results_dir)
 
     print('\n---------- Mistral AI service analysis finished ----------')
 

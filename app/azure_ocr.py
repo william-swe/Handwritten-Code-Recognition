@@ -3,13 +3,16 @@ import os
 from pathlib import Path
 
 # Import self-made modules
-from utils import define_directories, load_env_file, is_a_file_an_image, save_results_to_file
+from utils import OcrService, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
 
 # Import Azure SDK modules
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.documentintelligence import DocumentIntelligenceClient
 from azure.ai.documentintelligence.models import AnalyzeDocumentRequest
 from azure.core.exceptions import HttpResponseError
+
+# Define the OCR service being used
+SERVICE = OcrService.AZURE
 
 # Load environment variables
 load_env_file()
@@ -40,7 +43,7 @@ def analyse_read():
     )
 
     # Define directories and get image files
-    images_dir, image_files, results_dir = define_directories('azure')
+    images_dir, image_files, results_dir = define_directories(SERVICE)
 
     if not image_files:
         print("No images found in the directory.")
@@ -70,7 +73,7 @@ def analyse_read():
                 lines.append(line.content)
 
         # Save recognised text to file
-        save_results_to_file('azure', '\n'.join(lines), Path(image_path).stem, results_dir)
+        save_results_to_file(SERVICE, '\n'.join(lines), Path(image_path).stem, results_dir)
 
     print('\n---------- Azure service analysis finished ----------')
 

@@ -4,7 +4,7 @@ from PIL import Image
 import glob
 
 def compress_images():
-    images_dir = Path(__file__).resolve().parent.parent / 'images'
+    images_dir = Path(__file__).resolve().parent.parent / 'images' / 'raw'
     compressed_dir = Path(__file__).resolve().parent.parent / 'images' / 'compressed'
     compressed_dir.mkdir(parents=True, exist_ok=True)
     image_files = glob.glob(str(images_dir / '*'))

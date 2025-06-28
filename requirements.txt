@@ -14,6 +14,7 @@ httpx==0.28.1
 idna==3.10
 isodate==0.7.2
 jiter==0.10.0
+Levenshtein==0.27.1
 Markdown==3.8.2
 mistralai==1.8.2
 openai==1.91.0
@@ -22,6 +23,7 @@ pydantic==2.11.7
 pydantic_core==2.33.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
+RapidFuzz==3.13.0
 requests==2.32.4
 six==1.17.0
 sniffio==1.3.1

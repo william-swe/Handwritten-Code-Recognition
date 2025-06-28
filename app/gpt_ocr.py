@@ -93,3 +93,7 @@ if __name__ == "__main__":
     except Exception as error:
         print(f"An error occurred: {error}")
         exit(1)
+
+# 28/6/2025
+# OPENAI models available:
+# https://platform.openai.com/docs/models

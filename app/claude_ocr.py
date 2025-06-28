@@ -91,6 +91,8 @@ if __name__ == "__main__":
         print(f"An error occurred: {error}")
         exit(1)
 
+# 28/6/2025
+# Anthropic models available:
 # https://docs.anthropic.com/en/api/client-sdks
 '''
 # Claude 4 Models

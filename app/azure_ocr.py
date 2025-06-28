@@ -87,3 +87,7 @@ if __name__ == "__main__":
         if "Invalid request".casefold() in error.message.casefold():
             print(f"Invalid request: {error}")
         raise
+
+# 28/6/2025
+# Azure OCR model:
+# https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/prebuilt/read?view=doc-intel-4.0.0&tabs=sample-code 

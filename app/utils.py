@@ -1,5 +1,8 @@
 from enum import StrEnum
 
+# Enum for OCR service names
+# This allows for easy reference to different OCR services used in the application.
+# All used services are listed here, and they can be extended in the future if needed.
 class OcrService(StrEnum):
     AZURE = 'azure'
     MISTRAL = 'mistral'

@@ -2,7 +2,7 @@ import Levenshtein, re
 from pathlib import Path
 from utils import OcrService
 
-def get_average_normalized_levenshtein(service_name: str):
+def get_average_normalized_levenshtein(service_name: str, output_lines):
     # Map service name to folder and file prefix
     service = OcrService(service_name)
     results_dir = Path(__file__).resolve().parent.parent / 'results' / service
@@ -11,7 +11,7 @@ def get_average_normalized_levenshtein(service_name: str):
     # Find all result files for this service
     result_files = list(results_dir.glob(f'{service}_*.txt'))
     if not result_files:
-        print(f"No result files found for {service} in {results_dir}")
+        output_lines.append(f"No result files found for {service} in {results_dir}\n")
         return
 
     nld_list = []
@@ -26,7 +26,7 @@ def get_average_normalized_levenshtein(service_name: str):
         gt_base = base.replace('_comp', '')
         gt_file = gt_dir / f'{gt_base}.txt'
         if not gt_file.exists():
-            print(f"Ground truth file not found for {result_file.name}: {gt_file}")
+            output_lines.append(f"Ground truth file not found for {result_file.name}: {gt_file}\n")
             continue
         with open(gt_file, 'r', encoding='utf-8') as f:
             gt_text = f.read()
@@ -38,18 +38,22 @@ def get_average_normalized_levenshtein(service_name: str):
             # Calculate the normalised Levenshtein distance
             # The higher the value, the better the match
             nld = 1 - Levenshtein.distance(gt_text, ocr_text) / max(len(gt_text), len(ocr_text))
-            # print(f'Levenshtein distance for {result_file.name} vs {gt_file.name}: {Levenshtein.distance(gt_text, ocr_text)}')
+            output_lines.append(f'Levenshtein distance for {result_file.name} vs {gt_file.name}: {Levenshtein.distance(gt_text, ocr_text)}\n')
         nld_list.append(nld)
-        print(f'NLD for {result_file.name} vs {gt_file.name}: {nld:.4f}')
+        output_lines.append(f'NLD for {result_file.name} vs {gt_file.name}: {nld:.4f}\n')
     if nld_list:
         avg_nld = sum(nld_list) / len(nld_list)
-        print(f'Average normalised Levenshtein distance for {service}: {avg_nld:.4f}')
+        output_lines.append(f'Average normalised Levenshtein distance for {service}: {avg_nld:.4f}\n')
     else:
-        print(f'No valid file pairs found for {service}')
+        output_lines.append(f'No valid file pairs found for {service}\n')
 
 if __name__ == "__main__":
+    output_lines = []
     # Example usage: get_average_normalized_levenshtein('azure')
     for service in OcrService:
-        get_average_normalized_levenshtein(service)
-        print('-' * 40)
-    print("All services processed.")
+        get_average_normalized_levenshtein(service, output_lines)
+        output_lines.append('-' * 40 + '\n')
+    output_lines.append("All services processed.\n")
+    results_path = Path(__file__).resolve().parent.parent / 'results' / 'results.txt'
+    with open(results_path, 'w', encoding='utf-8') as f:
+        f.writelines(output_lines)

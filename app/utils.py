@@ -11,7 +11,8 @@ class OcrService(StrEnum):
 
 # Tuple of compressed image names to skip for OCR (manually input)
 SKIP_OCR_IMAGES = (
-    'logic_4_comp.png', 'syntax_1_comp.png'
+    'logic_4_comp.png', 'logic_5_comp.png', 'logic_6_comp.png',
+    'syntax_1_comp.png', 'syntax_2_comp.png'
 )
 
 def load_env_file():

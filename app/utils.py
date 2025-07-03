@@ -152,7 +152,8 @@ image_tags: dict[str, set[StrEnum]] = {
     'exam_7.png': {
         HandwritingColor.BLACK,
         HandwritingLegibility.GOOD,
-        HandwritingDeletion.CROSS_OUT_WORDS
+        HandwritingDeletion.CROSS_OUT_WORDS,
+        HandwritingError.SYNTAX
     },
     'exam_8.png': {
         HandwritingColor.BLACK,

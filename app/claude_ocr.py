@@ -121,3 +121,6 @@ if __name__ == "__main__":
 "claude-3-sonnet-20240229"
 "claude-3-haiku-20240307"
 '''
+
+# https://github.com/anthropics/courses/blob/master/anthropic_api_fundamentals/06_vision.ipynb
+# "Claude 3.5 Sonnet has the strongest vision capabilities"

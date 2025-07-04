@@ -5,7 +5,7 @@ from markdown import markdown
 from bs4 import BeautifulSoup
 
 # Import self-made modules
-from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
+from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file, natural_sort_files
 
 # Import Mistral AI modules
 from mistralai import Mistral, ImageURLChunk
@@ -42,8 +42,9 @@ def analyse_read():
     # Define directories and get image files
     images_dir, image_files, results_dir = define_directories(SERVICE)
 
-    # Only process images in PROCESSED_OCR_IMAGES
+    # Only process images in PROCESSED_OCR_IMAGES and sort them naturally
     image_files = [f for f in image_files if Path(f).name in PROCESSED_OCR_IMAGES]
+    image_files = natural_sort_files(image_files)
 
     if not image_files:
         print(f"No images found in {images_dir}.")

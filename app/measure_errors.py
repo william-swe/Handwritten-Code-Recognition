@@ -14,6 +14,11 @@ def get_average_normalized_levenshtein(service_name: str, output_lines):
         output_lines.append(f"No result files found for {service} in {results_dir}\n")
         return
 
+    # Sort result files by filename (natural sort for numbers)
+    def natural_key(s):
+        return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s.name)]
+    result_files = sorted(result_files, key=natural_key)
+
     nld_list = []
     for result_file in result_files:
         # Extract the base name (e.g., logic_4_comp from azure_logic_4_comp.txt)
@@ -57,3 +62,5 @@ if __name__ == "__main__":
     results_path = Path(__file__).resolve().parent.parent / 'results' / 'results.txt'
     with open(results_path, 'w', encoding='utf-8') as f:
         f.writelines(output_lines)
+    
+    print(f"Results written to {results_path}")

@@ -4,7 +4,8 @@ from PIL import Image
 import glob
 
 IMAGES_TO_BE_COMPRESSED = [
-    'examples_3.png',
+    'examples_6.png',
+    'examples_7.png',
 ]
 
 def compress_images():
@@ -15,7 +16,7 @@ def compress_images():
     # Process all images in the raw directory
     # Uncomment the next line to process all images in the raw directory
     # image_files = glob.glob(str(images_dir / '*'))
-    
+
     # Only process images listed in IMAGES_TO_BE_COMPRESSED
     image_files = [str(images_dir / name) for name in IMAGES_TO_BE_COMPRESSED if (images_dir / name).exists()]
     

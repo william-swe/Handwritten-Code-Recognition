@@ -3,7 +3,7 @@ import os, base64
 from pathlib import Path
 
 # Import self-made modules
-from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
+from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file, natural_sort_files
 
 # Import Anthropic SDK modules
 from anthropic import Anthropic
@@ -50,8 +50,9 @@ def analyse_read():
     # Define directories and get image files
     images_dir, image_files, results_dir = define_directories(SERVICE)
 
-    # Only process images in PROCESSED_OCR_IMAGES
+    # Only process images in PROCESSED_OCR_IMAGES and sort them naturally
     image_files = [f for f in image_files if Path(f).name in PROCESSED_OCR_IMAGES]
+    image_files = natural_sort_files(image_files)
 
     if not image_files:
         print(f"No images found in {images_dir}.")
@@ -74,6 +75,8 @@ def analyse_read():
         <instructions>
         Here are some important rules for the transcription task:
         - Transcribe the text exactly as it appears in the handwritten version. Do not correct any typos, syntax errors, or logical errors you may notice.
+        - Do NOT transcribe any text that is crossed out.
+        - When you see an insertion sign indicated in the image, please insert the inserted text to where the sign points to.
         - Please output only the transcribed text and nothing else. Remember, accuracy in transcription is important than anything else.
         </instructions>
         <question>
@@ -82,20 +85,19 @@ def analyse_read():
         Think about your answer first before you respond.
         """
 
-        # system_prompt = "You are a perfect OCR assistant. You will transcribe the text in the image exactly as it appears, without making any corrections or improvements. Your goal is to provide an accurate digital version of the handwritten text for evaluation purposes."
+        # system_prompt = "You are a perfect OCR assistant. You will transcribe the text in the image **exactly** as it appears, without making any corrections or improvements. Your goal is to provide an accurate digital version of the handwritten text for evaluation purposes."
 
         system_prompt = """
         You are a perfect OCR assistant for exam scripts.
         Your mission: transcribe _exactly_ what is written, and _only_ what is written.
-        Do NOT transcribe any text that is crossed out.
         """
 
-        with open('ground_truth/examples_1.txt', 'r', encoding='utf-8') as f:
-            gt_examples_1 = f.read().strip()
-        with open('ground_truth/examples_2.txt', 'r', encoding='utf-8') as f:
-            gt_examples_2 = f.read().strip()
-        with open('ground_truth/examples_3.txt', 'r', encoding='utf-8') as f:
-            gt_examples_3 = f.read().strip()
+        # Read all example ground truth files
+        gt_examples = []
+        for i in range(1, 8):
+            with open(f'ground_truth/examples_{i}.txt', 'r', encoding='utf-8') as f:
+                gt_examples.append(f.read().strip())
+        gt_examples_1, gt_examples_2, gt_examples_3, gt_examples_4, gt_examples_5, gt_examples_6, gt_examples_7 = gt_examples
         
         message_list = [
             # Examples: Syntax and logical errors
@@ -109,13 +111,38 @@ def analyse_read():
                 {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_2_comp.png")}},
                 {"type": "text", "text": prompt}
             ]},
-            # Examples: Syntax errors and cross-outs
             {"role": "assistant", "content": gt_examples_2},
+            # Examples: Syntax errors and cross-outs
             {"role": 'user', "content": [
                 {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_3_comp.png")}},
                 {"type": "text", "text": prompt}
             ]},
             {"role": "assistant", "content": gt_examples_3},
+            # Examples: Syntax, logical errors, cross-outs, and insertions
+            {"role": 'user', "content": [
+                {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_4_comp.png")}},
+                {"type": "text", "text": prompt}
+            ]},
+            {"role": "assistant", "content": gt_examples_4},
+            # Examples: Syntax errors, cross-outs, and insertions
+            {"role": 'user', "content": [
+                {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_5_comp.png")}},
+                {"type": "text", "text": prompt}
+            ]},
+            {"role": "assistant", "content": gt_examples_5},
+            # # Examples: Syntax, logical errors, cross-outs, and insertions
+            # {"role": 'user', "content": [
+            #     {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_6_comp.png")}},
+            #     {"type": "text", "text": prompt}
+            # ]},
+            # {"role": "assistant", "content": gt_examples_6},
+            # # Examples: Syntax errors, cross-outs, and insertions
+            # {"role": 'user', "content": [
+            #     {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_7_comp.png")}},
+            #     {"type": "text", "text": prompt}
+            # ]},
+            # {"role": "assistant", "content": gt_examples_7},
+
             # Prompt for the actual image
             {"role": 'user', "content": [
                 {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image(image_path)}},

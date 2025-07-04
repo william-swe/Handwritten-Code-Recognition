@@ -9,10 +9,25 @@ class OcrService(StrEnum):
     OPENAI = 'gpt'
     ANTHROPIC = 'claude'
 
-# Tuple of compressed image names to skip for OCR (manually input)
-SKIP_OCR_IMAGES = (
-    'logic_4_comp.png', 'logic_5_comp.png', 'logic_6_comp.png',
-    'syntax_1_comp.png', 'syntax_2_comp.png'
+# Tuple of compressed image names to process for OCR (manually input)
+PROCESSED_OCR_IMAGES = (
+    # 'logic_4_comp.png', 'logic_5_comp.png', 'logic_6_comp.png',
+    # 'syntax_1_comp.png', 'syntax_2_comp.png',
+    # 'example_1_comp.png', 'example_2_comp.png', 'example_3_comp.png',
+    # 'examples_1_comp.png', 
+    # 'examples_2_comp.png',
+    # 'examples_3_comp.png',
+    'exam_1_comp.png',
+    # 'exam_2_comp.png',
+    'exam_3_comp.png',
+    'exam_4_comp.png',
+    'exam_5_comp.png',
+    # 'exam_6_comp.png',
+    'exam_7_comp.png',
+    'exam_8_comp.png',
+    'exam_9_comp.png',
+    'exam_10_comp.png',
+    # 'exam_89_comp.png',
 )
 
 def load_env_file():
@@ -408,60 +423,60 @@ image_tags: dict[str, set[StrEnum]] = {
         HandwritingDeletion.CROSS_OUT_WORDS
     }, # MARKED
     'exam_57.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.GOOD,
     }, # MARKED
     'exam_58.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.GOOD,
     },
     'exam_59.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.GOOD,
     },
     'exam_60.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.POOR,
     }, # MARKED
     'exam_61.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.POOR,
     }, # MARKED
     'exam_62.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.GOOD
     },
     'exam_63.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.GOOD,
         HandwritingError.SYNTAX
     },
     'exam_64.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.EXCELLENT
     },
     'exam_65.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.GOOD
     },
     'exam_66.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.GOOD
     },
     'exam_67.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.GOOD
     },
     'exam_68.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.GOOD
     },
     'exam_69.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.GOOD
     },
     'exam_70.png': {
-        HanddwritingColor.GRAY,
+        HandwritingColor.GRAY,
         HandwritingLegibility.GOOD
     },
     'exam_71.png': {

@@ -3,11 +3,21 @@ from pathlib import Path
 from PIL import Image
 import glob
 
+IMAGES_TO_BE_COMPRESSED = [
+    'examples_3.png',
+]
+
 def compress_images():
     images_dir = Path(__file__).resolve().parent.parent / 'images' / 'raw'
     compressed_dir = Path(__file__).resolve().parent.parent / 'images' / 'compressed'
     compressed_dir.mkdir(parents=True, exist_ok=True)
-    image_files = glob.glob(str(images_dir / '*'))
+
+    # Process all images in the raw directory
+    # Uncomment the next line to process all images in the raw directory
+    # image_files = glob.glob(str(images_dir / '*'))
+    
+    # Only process images listed in IMAGES_TO_BE_COMPRESSED
+    image_files = [str(images_dir / name) for name in IMAGES_TO_BE_COMPRESSED if (images_dir / name).exists()]
     
     max_size = (1200, 1200)  # Max width, height
     max_bytes = 5 * 1024 * 1024  # 5 MB

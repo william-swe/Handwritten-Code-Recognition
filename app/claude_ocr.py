@@ -3,7 +3,7 @@ import os, base64
 from pathlib import Path
 
 # Import self-made modules
-from utils import OcrService, SKIP_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
+from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
 
 # Import Anthropic SDK modules
 from anthropic import Anthropic
@@ -25,6 +25,13 @@ if not api_key:
 # THE BELOW CODE IS ADAPTED FROM ANTHROPIC GUIDELINE:
 # https://github.com/anthropics/anthropic-cookbook/blob/main/multimodal/how_to_transcribe_text.ipynb
 
+# Create a Claude client
+print("Connecting to Claude AI service...\n")
+client = Anthropic(api_key=api_key)
+MODEL_NAME = "claude-opus-4-0"
+# "claude-opus-4-0"
+# "claude-3-5-sonnet-latest"
+
 def get_base64_encoded_image(image_path):
     with open(image_path, "rb") as image_file:
         binary_data = image_file.read()
@@ -39,16 +46,12 @@ def analyse_read():
     and sends them to the Claude API for text recognition.
     The results are saved to a file in a specified results directory.
     """
-    # Create a Claude client
-    print("Connecting to Claude AI service...\n")
-    client = Anthropic(api_key=api_key)
-    MODEL_NAME = "claude-3-5-haiku-20241022"  # Specify the model to use
 
     # Define directories and get image files
     images_dir, image_files, results_dir = define_directories(SERVICE)
 
-    # Only process images not in SKIP_OCR_IMAGES
-    image_files = [f for f in image_files if Path(f).name not in SKIP_OCR_IMAGES]
+    # Only process images in PROCESSED_OCR_IMAGES
+    image_files = [f for f in image_files if Path(f).name in PROCESSED_OCR_IMAGES]
 
     if not image_files:
         print(f"No images found in {images_dir}.")
@@ -64,26 +67,75 @@ def analyse_read():
 
         print(f"\nAnalysing {Path(image_path).name} by Claude service...")
 
-        # Prepare the message list with the image and text prompt
+        prompt = """
+        <context>
+        You will be acting as an OCR (Optical Character Recognition). Your goal is to transcribe a student's handwritten text in an exam paper to its digital version. This task is crucial as markers will use the digital text to evaluate the student's work. It is of utmost importance that you transcribe the text exactly as it appears, without making any corrections or improvements.
+        </context>
+        <instructions>
+        Here are some important rules for the transcription task:
+        - Transcribe the text exactly as it appears in the handwritten version. Do not correct any typos, syntax errors, or logical errors you may notice.
+        - Please output only the transcribed text and nothing else. Remember, accuracy in transcription is important than anything else.
+        </instructions>
+        <question>
+        Transcribe the text in the image. Only output the text and nothing else.
+        </question>
+        Think about your answer first before you respond.
+        """
+
+        # system_prompt = "You are a perfect OCR assistant. You will transcribe the text in the image exactly as it appears, without making any corrections or improvements. Your goal is to provide an accurate digital version of the handwritten text for evaluation purposes."
+
+        system_prompt = """
+        You are a perfect OCR assistant for exam scripts.
+        Your mission: transcribe _exactly_ what is written, and _only_ what is written.
+        Do NOT transcribe any text that is crossed out.
+        """
+
+        with open('ground_truth/examples_1.txt', 'r', encoding='utf-8') as f:
+            gt_examples_1 = f.read().strip()
+        with open('ground_truth/examples_2.txt', 'r', encoding='utf-8') as f:
+            gt_examples_2 = f.read().strip()
+        with open('ground_truth/examples_3.txt', 'r', encoding='utf-8') as f:
+            gt_examples_3 = f.read().strip()
+        
         message_list = [
-            {
-                "role": 'user',
-                "content": [
-                    {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image(image_path)}},
-                    {"type": "text", "text": "Please transcribe this text. Only output the text and nothing else."}
-                ]
-            }
+            # Examples: Syntax and logical errors
+            {"role": 'user', "content": [
+                {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_1_comp.png")}},
+                {"type": "text", "text": prompt}
+            ]},
+            {"role": "assistant", "content": gt_examples_1},
+            # Examples: Syntax and logical errors
+            {"role": 'user', "content": [
+                {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_2_comp.png")}},
+                {"type": "text", "text": prompt}
+            ]},
+            # Examples: Syntax errors and cross-outs
+            {"role": "assistant", "content": gt_examples_2},
+            {"role": 'user', "content": [
+                {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_3_comp.png")}},
+                {"type": "text", "text": prompt}
+            ]},
+            {"role": "assistant", "content": gt_examples_3},
+            # Prompt for the actual image
+            {"role": 'user', "content": [
+                {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image(image_path)}},
+                {"type": "text", "text": prompt}
+            ]}
         ]
         
         # Send the request to the Claude API
         response = client.messages.create(
             model=MODEL_NAME,
-            max_tokens=2048,
-            messages=message_list
+            system=system_prompt,
+            messages=message_list,
+            max_tokens=500,
+            temperature=0.0,
         )
 
         # Save recognised text to file
         save_results_to_file(SERVICE, response.content[0].text, Path(image_path).stem, results_dir)
+
+        # print(f"Usage from Claude: {response.usage}")
 
     print('\n---------- Claude service analysis finished ----------')
 

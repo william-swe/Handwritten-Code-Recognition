@@ -85,8 +85,6 @@ def analyse_read():
         Think about your answer first before you respond.
         """
 
-        # system_prompt = "You are a perfect OCR assistant. You will transcribe the text in the image **exactly** as it appears, without making any corrections or improvements. Your goal is to provide an accurate digital version of the handwritten text for evaluation purposes."
-
         system_prompt = """
         You are a perfect OCR assistant for exam scripts.
         Your mission: transcribe _exactly_ what is written, and _only_ what is written.

@@ -9,7 +9,7 @@ from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env
 from anthropic import Anthropic
 
 # Define the OCR service being used
-SERVICE = OcrService.ANTHROPIC
+SERVICE = OcrService.PSEUDO5
 
 # Load environment variables
 load_env_file()
@@ -60,13 +60,14 @@ def analyse_read():
 
     print('---------- Claude service analysis started ----------')
 
+    token_usage_rows = []
     for image_path in image_files:
         # Check if the file is an image
         if not is_a_file_an_image(image_path):
             print(f"\nSkipping {Path(image_path).name}, not a supported image format.")
             continue
 
-        print(f"\nAnalysing {Path(image_path).name} by Claude service...")
+        print(f"\nAnalysing {Path(image_path).name} by {MODEL_NAME}...")
 
         # Read an output from Mistral AI service
         mistral_filename = f"mistral_{Path(image_path).stem}.txt"
@@ -77,30 +78,7 @@ def analyse_read():
                 mistral_output = f.read()
         else:
             print(f"Warning: Mistral output file not found: {mistral_filepath}")
-            return
-
-        # print(f"Using Mistral output: {mistral_output}")
-
-        # prompt = f"""
-        # <context>
-        # You will be acting as an OCR (Optical Character Recognition). Your goal is to transcribe a student's handwritten text in an exam paper to its digital version. This task is crucial as markers will use the digital text to evaluate the student's work.
-        # </context>
-        # <instructions>
-        # Here are some important rules for the transcription task:
-        # - Transcribe the text exactly as it appears in the handwritten version. Do not correct any typos, syntax errors, or logical errors you may notice.
-        # - When you see an insertion sign indicated in the image, please insert the inserted text to where the sign points to.
-        # - Do not transcribe any text that is crossed out or erased. For example, if a student has crossed out a word or sentence, do not include it in the transcription. A crossed-out text is a text that has one or multiple line(s) drawn through it, indicating that it should not be considered.
-        # </instructions>
-        # <example>
-        # Here is an example of an output from Mistral AI service:
-        # {mistral_output}
-        # Please use this example as a reference for your transcription to avoid hallucinations, but be mindful of the context and instructions provided, and the example may not be correct. The example may keep crossed out text, but you should not transcribe any crossed out text.
-        # </example>
-        # <question>
-        # Transcribe the text in the image.
-        # </question>
-        # Think about your answer first before you respond. Only output the text and nothing else.
-        # """
+            continue
 
         prompt = f"""
         Transcribe the text in this image exactly. Output a line of text per line of text in the document. To assist you in the transcription, below is Mistral's attempt at extracting text from this image. Note, Mistral can be incorrect, but you can use it to help in your transcription.
@@ -113,22 +91,7 @@ def analyse_read():
         You are a perfect OCR assistant designed to transcribe text.
         """
 
-        # Read all example ground truth files
-        # gt_examples = []
-        # for i in range(1, 8):
-        #     with open(f'ground_truth/examples_{i}.txt', 'r', encoding='utf-8') as f:
-        #         gt_examples.append(f.read().strip())
-        # gt_examples_1, gt_examples_2, gt_examples_3, gt_examples_4, gt_examples_5, gt_examples_6, gt_examples_7 = gt_examples
-        
         message_list = [
-            # Examples: Syntax and logical errors
-            # {"role": 'user', "content": [
-            #     {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_1_comp.png")}},
-            #     {"type": "text", "text": prompt}
-            # ]},
-            # {"role": "assistant", "content": gt_examples_1},
-
-            # Prompt for the actual image
             {"role": 'user', "content": [
                 {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image(image_path)}},
                 {"type": "text", "text": prompt}
@@ -145,10 +108,40 @@ def analyse_read():
         )
 
         # Save recognised text to file
-        mistral_claude_results_dir = Path('results/mistral_claude')
-        mistral_claude_results_dir.mkdir(parents=True, exist_ok=True)
-        save_results_to_file('mistral_claude', response.content[0].text, Path(image_path).stem, mistral_claude_results_dir)
-        # print(f"Usage from Claude: {response.usage}")
+        save_results_to_file(SERVICE, response.content[0].text, Path(image_path).stem, results_dir)
+
+        # Track token usage
+        usage = getattr(response, 'usage', None)
+        input_tokens = output_tokens = ''
+        if usage:
+            input_tokens = getattr(usage, 'input_tokens', '')
+            output_tokens = getattr(usage, 'output_tokens', '')
+        token_usage_rows.append(f"| {Path(image_path).name} | {input_tokens} | {output_tokens} |\n")
+
+
+    # Write token usage table to Markdown file in the Claude results directory
+    token_usage_path = results_dir / 'claude_token_usage.md'
+    # Write header if file does not exist
+    if not token_usage_path.exists():
+        with open(token_usage_path, 'w', encoding='utf-8') as f:
+            f.write("| OCR Input File | Input Tokens | Output Tokens |\n|:---:|:---:|:---:|\n")
+    # Append rows
+    with open(token_usage_path, 'a', encoding='utf-8') as f:
+        for row in token_usage_rows:
+            f.write(row)
+    # Compute and append averages if any rows were written
+    if token_usage_rows:
+        try:
+            input_sum = sum(int(row.split('|')[2].strip()) for row in token_usage_rows if row.split('|')[2].strip().isdigit())
+            output_sum = sum(int(row.split('|')[3].strip()) for row in token_usage_rows if row.split('|')[3].strip().isdigit())
+            count = len([row for row in token_usage_rows if row.split('|')[2].strip().isdigit() and row.split('|')[3].strip().isdigit()])
+            if count > 0:
+                avg_input = round(input_sum / count, 1)
+                avg_output = round(output_sum / count, 1)
+                with open(token_usage_path, 'a', encoding='utf-8') as f:
+                    f.write(f"| **Average** | {avg_input} | {avg_output} |\n")
+        except Exception as e:
+            print(f"Error calculating averages for token usage: {e}")
 
     print('\n---------- Claude service analysis finished ----------')
 

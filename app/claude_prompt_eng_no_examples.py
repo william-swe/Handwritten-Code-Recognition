@@ -3,13 +3,13 @@ import os, base64
 from pathlib import Path
 
 # Import self-made modules
-from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file, natural_sort_files
+from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
 
 # Import Anthropic SDK modules
 from anthropic import Anthropic
 
 # Define the OCR service being used
-SERVICE = OcrService.ANTHROPIC
+SERVICE = OcrService.PSEUDO2
 
 # Load environment variables
 load_env_file()
@@ -28,7 +28,7 @@ if not api_key:
 # Create a Claude client
 print("Connecting to Claude AI service...\n")
 client = Anthropic(api_key=api_key)
-MODEL_NAME = "claude-3-5-sonnet-latest"
+MODEL_NAME = "claude-opus-4-0"
 # "claude-opus-4-0"
 # "claude-3-5-sonnet-latest"
 
@@ -50,9 +50,8 @@ def analyse_read():
     # Define directories and get image files
     images_dir, image_files, results_dir = define_directories(SERVICE)
 
-    # Only process images in PROCESSED_OCR_IMAGES and sort them naturally
+    # Only process images in PROCESSED_OCR_IMAGES
     image_files = [f for f in image_files if Path(f).name in PROCESSED_OCR_IMAGES]
-    image_files = natural_sort_files(image_files)
 
     if not image_files:
         print(f"No images found in {images_dir}.")
@@ -60,6 +59,8 @@ def analyse_read():
 
     print('---------- Claude service analysis started ----------')
 
+    # Prepare to track token usage
+    token_usage_rows = []
     for image_path in image_files:
         # Check if the file is an image
         if not is_a_file_an_image(image_path):
@@ -68,39 +69,84 @@ def analyse_read():
 
         print(f"\nAnalysing {Path(image_path).name} by Claude service...")
 
-        prompt = f"""
+        prompt = """
+        <context>
+        You will be acting as an OCR (Optical Character Recognition). Your goal is to transcribe a student's handwritten text in an exam paper to its digital version. This task is crucial as markers will use the digital text to evaluate the student's work. It is of utmost importance that you transcribe the text exactly as it appears, without making any corrections or improvements.
+        </context>
+        <instructions>
+        Here are some important rules for the transcription task:
         - Transcribe the text exactly as it appears in the handwritten version. Do not correct any typos, syntax errors, or logical errors you may notice.
-        - Do not transcribe any text that is crossed out or erased. For example, if a student has crossed out a word or sentence, do not include it in the transcription. A crossed-out text is a text that has one or multiple line(s) drawn through it, indicating that it should not be considered.
-        - Think about your answer before you write it.
-        - Only output the text and nothing else.
-        # """
+        - Do NOT transcribe any text that is crossed out.
+        - When you see an insertion sign indicated in the image, please insert the inserted text to where the sign points to.
+        - Please output only the transcribed text and nothing else. Remember, accuracy in transcription is important than anything else.
+        </instructions>
+        <question>
+        Transcribe the text in the image. Only output the text and nothing else.
+        </question>
+        Think about your answer first before you respond.
+        """
 
-        # system_prompt = """
-        # You are a perfect OCR assistant designed to transcribe exam scripts.
-        # """
+        # system_prompt = "You are a perfect OCR assistant. You will transcribe the text in the image exactly as it appears, without making any corrections or improvements. Your goal is to provide an accurate digital version of the handwritten text for evaluation purposes."
+
+        system_prompt = """
+        You are a perfect OCR assistant for exam scripts.
+        Your mission: transcribe _exactly_ what is written, and _only_ what is written.
+        """
+
 
         message_list = [
-            # Prompt for the actual image
             {"role": 'user', "content": [
                 {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image(image_path)}},
                 {"type": "text", "text": prompt}
             ]}
         ]
-        
+
         # Send the request to the Claude API
         response = client.messages.create(
             model=MODEL_NAME,
-            # system=system_prompt,
+            system=system_prompt,
             messages=message_list,
             max_tokens=500,
             temperature=0.0,
         )
 
         # Save recognised text to file
-        experiment_claude = Path('results/experiment_claude')
-        experiment_claude.mkdir(parents=True, exist_ok=True)
-        save_results_to_file('experiment_claude', response.content[0].text, Path(image_path).stem, experiment_claude)
+        save_results_to_file(SERVICE, response.content[0].text, Path(image_path).stem, results_dir)
+
+        # Track token usage
+        usage = getattr(response, 'usage', None)
+        input_tokens = output_tokens = ''
+        if usage:
+            input_tokens = getattr(usage, 'input_tokens', '')
+            output_tokens = getattr(usage, 'output_tokens', '')
+        token_usage_rows.append(f"| {Path(image_path).name} | {input_tokens} | {output_tokens} |\n")
+
         print(f"Usage from Claude: {response.usage}")
+
+
+    # Write token usage table to Markdown file
+    token_usage_path = Path(__file__).resolve().parent.parent / 'results' / 'claude_token_usage.md'
+    # Read header (first two lines)
+    if not token_usage_path.exists():
+        with open(token_usage_path, 'w', encoding='utf-8') as f:
+            f.write("| OCR Input File | Input Tokens | Output Tokens |\n|:---:|:---:|:---:|\n")
+    # Append rows
+    with open(token_usage_path, 'a', encoding='utf-8') as f:
+        for row in token_usage_rows:
+            f.write(row)
+    # Compute and append averages if any rows were written
+    if token_usage_rows:
+        try:
+            input_sum = sum(int(row.split('|')[2].strip()) for row in token_usage_rows if row.split('|')[2].strip().isdigit())
+            output_sum = sum(int(row.split('|')[3].strip()) for row in token_usage_rows if row.split('|')[3].strip().isdigit())
+            count = len([row for row in token_usage_rows if row.split('|')[2].strip().isdigit() and row.split('|')[3].strip().isdigit()])
+            if count > 0:
+                avg_input = round(input_sum / count, 1)
+                avg_output = round(output_sum / count, 1)
+                with open(token_usage_path, 'a', encoding='utf-8') as f:
+                    f.write(f"| **Average** | {avg_input} | {avg_output} |\n")
+        except Exception as e:
+            print(f"Error calculating averages for token usage: {e}")
 
     print('\n---------- Claude service analysis finished ----------')
 

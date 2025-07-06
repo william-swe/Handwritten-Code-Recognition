@@ -8,19 +8,22 @@ class OcrService(StrEnum):
     AZURE = 'azure'
     MISTRAL = 'mistral'
     OPENAI = 'gpt'
-    ANTHROPIC = 'claude'
+    # ANTHROPIC = 'claude'
+    PSEUDO1 = 'claude_no_prompt_eng'
+    PSEUDO2 = 'claude_prompt_eng_5_set_examples'
+    PSEUDO3 = 'claude_prompt_eng_7_set_examples'
 
 # Tuple of compressed image names to process for OCR (manually input)
 PROCESSED_OCR_IMAGES = (
-    'exam_1_comp.png',
-    'exam_2_comp.png',
-    'exam_4_comp.png',
-    'exam_5_comp.png',
+    # 'exam_1_comp.png',
+    # 'exam_2_comp.png',
+    # 'exam_4_comp.png',
+    # 'exam_5_comp.png',
     'exam_6_comp.png',
     'exam_7_comp.png',
     'exam_8_comp.png',
-    'exam_11_comp.png',
-    'exam_12_comp.png',
+    # 'exam_11_comp.png',
+    # 'exam_12_comp.png',
     'exam_89_comp.png',
 )
 

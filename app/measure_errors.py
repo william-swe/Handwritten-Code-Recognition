@@ -8,8 +8,8 @@ def collect_levenshtein_distances():
     gt_dir = Path(__file__).resolve().parent.parent / 'ground_truth'
     all_gt_files = sorted([f for f in gt_dir.glob('*.txt')], key=lambda s: [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s.name)])
     services = list(OcrService)
-    ld_table = {}  # {gt_file: {service: LD}}
-    avg_ld = {service: [] for service in services}
+    ld_table = {}  # {gt_file: {service: NLD}}
+    avg_nld = {service: [] for service in services}
     for gt_file in all_gt_files:
         gt_name = gt_file.name
         with open(gt_file, 'r', encoding='utf-8') as f:
@@ -21,18 +21,19 @@ def collect_levenshtein_distances():
             pattern = f'{service}_{gt_name.replace(".txt", "_comp.txt")}'
             result_file = results_dir / pattern
             if not result_file.exists():
-                ld = ''
+                nld = ''
             else:
                 with open(result_file, 'r', encoding='utf-8') as f:
                     ocr_text = f.read()
                 if not gt_text.strip() and not ocr_text.strip():
-                    ld = 0
+                    nld = 1.0
                 else:
-                    ld = Levenshtein.distance(gt_text, ocr_text)
-                    avg_ld[service].append(ld)
-            ld_table[gt_name][service] = ld
+                    lev_dist = Levenshtein.distance(gt_text, ocr_text)
+                    nld = 1 - lev_dist / max(len(gt_text), len(ocr_text))
+                    avg_nld[service].append(nld)
+            ld_table[gt_name][service] = nld
     # Calculate averages
-    avg_row = {service: (sum(avg_ld[service])/len(avg_ld[service]) if avg_ld[service] else 0) for service in services}
+    avg_row = {service: (sum(avg_nld[service])/len(avg_nld[service]) if avg_nld[service] else 0) for service in services}
     return ld_table, avg_row, services
 
 def get_service_gt_files(service_name):
@@ -120,47 +121,56 @@ if __name__ == "__main__":
     # Generate a summary table of Levenshtein distances for all OCR services
     ld_table, avg_row, services = collect_levenshtein_distances()
     output_lines = []
+
     output_lines.append("# OCR Result Summary\n\n")
-    output_lines.append("## OCR Levenshtein Distance Summary\n\n")
+    output_lines.append("## OCR Normalized Levenshtein Distance (NLD) Summary\n\n")
     # Dynamic header
     header = ["Ground Truth File"] + [
-        f"{service.upper()} LD" if service == 'gpt' else f"{service.title().replace('_', ' ')} LD" 
+        f"{service.upper()} NLD" if service == 'gpt' else f"{service.title().replace('_', ' ')} NLD" 
         for service in services
     ]
     output_lines.append(f"| {' | '.join(header)} |\n")
     output_lines.append(f"|{'|'.join([':---:' for _ in header])}|\n")
     summary_gt_files = []
     for gt_file in ld_table:
-        # Exclude if all services have missing LD
+        # Exclude if all services have missing NLD
         if all(ld_table[gt_file][service] == '' for service in services):
             continue
         summary_gt_files.append(gt_file)
         row = [gt_file]
         for service in services:
             val = ld_table[gt_file][service]
-            row.append(f"{val}" if val != '' else "-")
+            if val == '':
+                row.append("-")
+            else:
+                row.append(f"{val:.3f}")
         output_lines.append(f"| {' | '.join(row)} |\n")
-    avg_row_fmt = [f"{avg_row[service]:.2f}" if avg_row[service] != 0 else "-" for service in services]
+    avg_row_fmt = [f"{avg_row[service]:.3f}" if avg_row[service] != 0 else "-" for service in services]
     output_lines.append(f"| **Average** | {' | '.join(avg_row_fmt)} |\n\n")
 
     # --- Generate and insert graph ---
     # Prepare data for the graph
     service_labels = [service.upper() if service == 'gpt' else service.title().replace('_', ' ') for service in services]
-    avg_ld_values = [avg_row[service] for service in services]
+    avg_nld_values = [avg_row[service] for service in services]
     plt.figure(figsize=(8, 6))
-    bars = plt.bar(service_labels, avg_ld_values, color='skyblue')
-    plt.ylabel('Average Levenshtein Distance')
-    plt.title('Average Levenshtein Distance by OCR Service')
+    bars = plt.bar(service_labels, avg_nld_values, color='skyblue')
+    plt.ylabel('Average Normalized Levenshtein Distance (NLD)')
+    plt.title('Average NLD by OCR Service')
     plt.grid(axis='y', linestyle='--', alpha=0.6)
     plt.xticks(rotation=30, ha='right')
-    for bar, value in zip(bars, avg_ld_values):
-        plt.text(bar.get_x() + bar.get_width()/2, bar.get_height(), f'{value:.2f}', ha='center', va='bottom')
+    # Set y-axis ticks to have a gap of 0.3
+    import numpy as np
+    min_y = 0
+    max_y = max(avg_nld_values + [1.0])
+    plt.yticks(np.arange(min_y, max_y + 0.3, 0.3))
+    for bar, value in zip(bars, avg_nld_values):
+        plt.text(bar.get_x() + bar.get_width()/2, bar.get_height(), f'{value:.3f}', ha='center', va='bottom')
     graph_path = Path(__file__).resolve().parent.parent / 'results' / 'avg_levenshtein_distance.png'
     plt.tight_layout()
     plt.savefig(graph_path)
     plt.close()
     # Insert image below the summary table
-    output_lines.append(f'![Average Levenshtein Distance by OCR Service](avg_levenshtein_distance.png)\n\n')
+    output_lines.append(f'![Average Normalized Levenshtein Distance by OCR Service](avg_levenshtein_distance.png)\n\n')
     # --- End graph ---
 
     # Check for differences in ground truth files between summary and each service

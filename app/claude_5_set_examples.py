@@ -3,7 +3,7 @@ import os, base64
 from pathlib import Path
 
 # Import self-made modules
-from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file
+from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, read_ground_truth_file, save_results_to_file
 
 # Import Anthropic SDK modules
 from anthropic import Anthropic
@@ -92,10 +92,7 @@ def analyse_read():
         """
 
         # Read all example ground truth files
-        gt_examples = []
-        for i in range(1, 8):
-            with open(f'ground_truth/examples_{i}.txt', 'r', encoding='utf-8') as f:
-                gt_examples.append(f.read().strip())
+        gt_examples = read_ground_truth_file()
         gt_examples_1, gt_examples_2, gt_examples_3, gt_examples_4, gt_examples_5, gt_examples_6, gt_examples_7 = gt_examples
         
         message_list = [

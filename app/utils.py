@@ -7,7 +7,11 @@ from pathlib import Path
 class OcrService(StrEnum):
     AZURE = 'azure'
     MISTRAL = 'mistral'
-    OPENAI = 'gpt'
+    # OPENAI = 'gpt'
+    PSEUDO6 = 'gpt_no_prompt_eng'
+    PSEUDO7 = 'gpt_prompt_eng_no_examples'
+    PSEUDO8 = 'gpt_prompt_eng_5_examples'
+    PSEUDO9 = 'gpt_prompt_eng_7_examples'
     # ANTHROPIC = 'claude'
     PSEUDO1 = 'claude_no_prompt_eng'
     PSEUDO2 = 'claude_prompt_eng_no_examples'
@@ -79,6 +83,20 @@ def is_a_file_an_image(file_path):
     from pathlib import Path
     image_extensions = ['.png', '.jpg', '.jpeg']
     return Path(file_path).suffix.lower() in image_extensions
+
+def read_ground_truth_file():
+    '''
+    Read ground truth examples from text files.
+    Returns:
+        tuple: A tuple containing the ground truth examples.
+    '''
+    NUMBER_OF_EXAMPLES = 7
+    gt_examples = []
+    for i in range(1, NUMBER_OF_EXAMPLES + 1):
+        with open(f'ground_truth/examples_{i}.txt', 'r', encoding='utf-8') as f:
+            gt_examples.append(f.read().strip())
+
+    return tuple(gt_examples)
 
 def save_results_to_file(ocr_name, results, file_name, results_dir):
     '''

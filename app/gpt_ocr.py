@@ -23,12 +23,14 @@ if not api_key:
     exit(1)
 
 # Create an OpenAI client
+print("Connecting to OpenAI service...\n")
 client = OpenAI(api_key=api_key)
+MODEL_NAME = "gpt-4.1"
 
 # THE BELOW CODE IS ADAPTED FROM OPENAI GUIDELINE:
 # https://platform.openai.com/docs/guides/images-vision?api-mode=responses&format=url
 
-# Function to encode the image
+# Function to encode an image
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode("utf-8")
@@ -40,8 +42,6 @@ def analyse_read():
     encodes them to Base64, and sends them to the OpenAI API for text recognition.
     The results are saved to a file in a specified results directory.
     """
-    # Create an OpenAI client
-    print("Connecting to OpenAI service...\n")
 
     # Define directories and get image files
     images_dir, image_files, results_dir = define_directories(SERVICE)
@@ -71,9 +71,6 @@ def analyse_read():
             model="gpt-4o-mini",
             input=[
                 {
-                    "role": "system", "content": "You are a perfect OCR assistant."
-                },
-                {
                     "role": "user",
                     "content": [
                         {"type": "input_text", "text": "Please transcribe this text. Only output the text and nothing else."},
@@ -99,5 +96,5 @@ if __name__ == "__main__":
         exit(1)
 
 # 28/6/2025
-# OPENAI models available:
+# OPENAI available models:
 # https://platform.openai.com/docs/models

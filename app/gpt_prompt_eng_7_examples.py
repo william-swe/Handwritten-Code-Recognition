@@ -9,7 +9,7 @@ from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env
 from openai import OpenAI
 
 # Define the OCR service being used
-SERVICE = OcrService.PSEUDO9
+SERVICE = OcrService.PSEUDO11
 
 # Load environment variables
 load_env_file()

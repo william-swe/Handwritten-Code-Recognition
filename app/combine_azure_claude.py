@@ -9,7 +9,7 @@ from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env
 from anthropic import Anthropic
 
 # Define the OCR service being used
-SERVICE = OcrService.PSEUDO5
+SERVICE = OcrService.PSEUDO16
 
 # Load environment variables
 load_env_file()
@@ -69,19 +69,19 @@ def analyse_read():
 
         print(f"\nAnalysing {Path(image_path).name} by {MODEL_NAME}...")
 
-        # Read an output from Mistral AI service
-        mistral_filename = f"mistral_{Path(image_path).stem}.txt"
-        mistral_filepath = Path('results/mistral') / mistral_filename
-        mistral_output = read_an_OCR_output_file(mistral_filename, mistral_filepath)
-        if not mistral_output:
-            print(f"Warning: Mistral output file not found: {mistral_filepath}")
+        # Read an output from Azure AI service
+        azure_filename = f"azure_{Path(image_path).stem}.txt"
+        azure_filepath = Path('results/azure') / azure_filename
+        azure_output = read_an_OCR_output_file(azure_filename, azure_filepath)
+        if not azure_output:
+            print(f"Warning: Azure output file not found: {azure_filepath}")
             continue
 
         prompt = f"""
-        Transcribe the text in this image exactly. Output a line of text per line of text in the document. To assist you in the transcription, below is Mistral's attempt at extracting text from this image. Note, Mistral can be incorrect, but you can use it to help in your transcription.
-        <mistral_output>
-        {mistral_output}
-        </mistral_output>
+        Transcribe the text in this image exactly. Output a line of text per line of text in the document. To assist you in the transcription, below is Azure's attempt at extracting text from this image. Note, Azure can be incorrect, but you can use it to help in your transcription.
+        <azure_output>
+        {azure_output}
+        </azure_output>
         """
 
         system_prompt = """

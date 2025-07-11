@@ -9,7 +9,7 @@ from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env
 from openai import OpenAI
 
 # Define the OCR service being used
-SERVICE = OcrService.PSEUDO10
+SERVICE = OcrService.PSEUDO8
 
 # Load environment variables
 load_env_file()
@@ -118,50 +118,6 @@ def analyse_read():
                 {
                     "role": "assistant",
                     "content": gt_examples_1
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_2_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_2
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_3_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_3
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_4_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_4
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_5_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_5
                 },
                 {
                     "role": "user",

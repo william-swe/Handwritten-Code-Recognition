@@ -9,7 +9,7 @@ from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env
 from openai import OpenAI
 
 # Define the OCR service being used
-SERVICE = OcrService.PSEUDO10
+SERVICE = OcrService.PSEUDO12
 
 # Load environment variables
 load_env_file()
@@ -25,7 +25,7 @@ if not api_key:
 # Create an OpenAI client
 print("Connecting to OpenAI service...\n")
 client = OpenAI(api_key=api_key)
-MODEL_NAME = "gpt-4.1"
+MODEL_NAME = "gpt-4.5-preview"
 
 # THE BELOW CODE IS ADAPTED FROM OPENAI GUIDELINE and COOKBOOK:
 # https://platform.openai.com/docs/guides/images-vision?api-mode=responses&format=url
@@ -213,8 +213,8 @@ def analyse_read():
                 avg_output = round(total_output_tokens / count, 1) if count else 0
                 f.write(f"| **Average** | {avg_input} | {avg_output} |\n")
                 # Calculate and write total cost
-                input_cost = total_input_tokens * 2.00 / 1_000_000
-                output_cost = total_output_tokens * 8.00 / 1_000_000
+                input_cost = total_input_tokens * 75.00 / 1_000_000
+                output_cost = total_output_tokens * 150.00 / 1_000_000
                 total_cost = input_cost + output_cost
                 f.write(f"\n**Total cost:** ${total_cost:.4f} (Input: ${input_cost:.4f}, Output: ${output_cost:.4f})\n")
             except Exception as e:

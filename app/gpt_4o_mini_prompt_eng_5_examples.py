@@ -9,7 +9,7 @@ from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env
 from openai import OpenAI
 
 # Define the OCR service being used
-SERVICE = OcrService.PSEUDO10
+SERVICE = OcrService.PSEUDO13
 
 # Load environment variables
 load_env_file()
@@ -25,7 +25,7 @@ if not api_key:
 # Create an OpenAI client
 print("Connecting to OpenAI service...\n")
 client = OpenAI(api_key=api_key)
-MODEL_NAME = "gpt-4.1"
+MODEL_NAME = "o4-mini"
 
 # THE BELOW CODE IS ADAPTED FROM OPENAI GUIDELINE and COOKBOOK:
 # https://platform.openai.com/docs/guides/images-vision?api-mode=responses&format=url
@@ -101,82 +101,84 @@ def analyse_read():
         gt_examples = read_ground_truth_file()
         gt_examples_1, gt_examples_2, gt_examples_3, gt_examples_4, gt_examples_5, gt_examples_6, gt_examples_7 = gt_examples
 
-        response = client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_1_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_1
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_2_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_2
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_3_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_3
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_4_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_4
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_5_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_5
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}", "detail": "high"}}
-                    ]
-                }
-            ],
-            temperature=0.0,
-            max_tokens=300,
-        )
-
-        # Save recognised text to file
-        save_results_to_file(SERVICE, response.choices[0].message.content, Path(image_path).stem, results_dir)
+        try:
+            response = client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system_prompt
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_1_comp.png')}", "detail": "high"}}
+                        ]
+                    },
+                    {
+                        "role": "assistant",
+                        "content": gt_examples_1
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_2_comp.png')}", "detail": "high"}}
+                        ]
+                    },
+                    {
+                        "role": "assistant",
+                        "content": gt_examples_2
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_3_comp.png')}", "detail": "high"}}
+                        ]
+                    },
+                    {
+                        "role": "assistant",
+                        "content": gt_examples_3
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_4_comp.png')}", "detail": "high"}}
+                        ]
+                    },
+                    {
+                        "role": "assistant",
+                        "content": gt_examples_4
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_5_comp.png')}", "detail": "high"}}
+                        ]
+                    },
+                    {
+                        "role": "assistant",
+                        "content": gt_examples_5
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}", "detail": "high"}}
+                        ]
+                    }
+                ],
+                max_completion_tokens=1000
+            )
+            output_text = response.choices[0].message.content
+            print("Model output:", output_text)
+            save_results_to_file(SERVICE, output_text, Path(image_path).stem, results_dir)
+        except Exception as e:
+            print(f"Error during OpenAI call or saving result: {e}")
 
         # Track token usage
         usage = getattr(response, 'usage', None)
@@ -213,8 +215,8 @@ def analyse_read():
                 avg_output = round(total_output_tokens / count, 1) if count else 0
                 f.write(f"| **Average** | {avg_input} | {avg_output} |\n")
                 # Calculate and write total cost
-                input_cost = total_input_tokens * 2.00 / 1_000_000
-                output_cost = total_output_tokens * 8.00 / 1_000_000
+                input_cost = total_input_tokens * 1.1 / 1_000_000
+                output_cost = total_output_tokens * 4.4 / 1_000_000
                 total_cost = input_cost + output_cost
                 f.write(f"\n**Total cost:** ${total_cost:.4f} (Input: ${input_cost:.4f}, Output: ${output_cost:.4f})\n")
             except Exception as e:

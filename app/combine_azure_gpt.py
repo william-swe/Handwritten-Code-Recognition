@@ -3,13 +3,13 @@ import os, base64
 from pathlib import Path
 
 # Import self-made modules
-from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, read_ground_truth_file, save_results_to_file, natural_sort_files
+from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file, natural_sort_files, read_an_OCR_output_file
 
 # Import OpenAI modules
 from openai import OpenAI
 
 # Define the OCR service being used
-SERVICE = OcrService.PSEUDO10
+SERVICE = OcrService.PSEUDO14
 
 # Load environment variables
 load_env_file()
@@ -69,37 +69,27 @@ def analyse_read():
 
         print(f"\nAnalysing {Path(image_path).name} by {MODEL_NAME}...")
 
+        # Read an output from Azure AI service
+        azure_filename = f"azure_{Path(image_path).stem}.txt"
+        azure_filepath = Path('results/azure') / azure_filename
+        azure_output = read_an_OCR_output_file(azure_filename, azure_filepath)
+        if not azure_output:
+            print(f"Warning: Azure output file not found: {azure_filepath}")
+            continue
+
         # Getting the Base64 string
         base64_image = encode_image(image_path)
 
-        system_prompt = f"""
-        <role>
-        You are a perfect OCR assistant for exam scripts.
-        </role>
-        <mission>
-        Transcribe _exactly_ what is written, and _only_ what is written.
-        </mission>
-        <context>
-        You will be acting as an OCR (Optical Character Recognition). Your goal is to transcribe a student's handwritten text in an exam paper to its digital version. This task is crucial as markers will use the digital text to evaluate the student's work. It is of utmost importance that you transcribe the text exactly as it appears, without making any corrections or improvements.
-        </context>
-        <instructions>
-        Here are some important rules for the transcription task:
-        - Transcribe the text exactly as it appears in the handwritten version. Do not correct any typos, syntax errors, or logical errors you may notice.
-        - Do NOT transcribe any text that is crossed out.
-        - When you see an insertion sign indicated in the image, please insert the inserted text to where the sign points to.
-        - Please output only the transcribed text and nothing else. Remember, accuracy in transcription is important than anything else.
-        </instructions>
-        <question>
-        Transcribe the text in the image. Only output the text and nothing else.
-        </question>
-        Think about your answer first before you respond.
+        system_prompt = """
+        You are a perfect OCR assistant designed to transcribe text.
         """
 
-        prompt = "Extract the text in the image. Only output the text and nothing else."
-
-        # Read all example ground truth files
-        gt_examples = read_ground_truth_file()
-        gt_examples_1, gt_examples_2, gt_examples_3, gt_examples_4, gt_examples_5, gt_examples_6, gt_examples_7 = gt_examples
+        prompt = f"""
+        Transcribe the text in this image exactly. Output a line of text per line of text in the document. To assist you in the transcription, below is Azure's attempt at extracting text from this image. Note, Azure can be incorrect, but you can use it to help in your transcription.
+        <azure_output>
+        {azure_output}
+        </azure_output>
+        """
 
         response = client.chat.completions.create(
             model=MODEL_NAME,
@@ -107,61 +97,6 @@ def analyse_read():
                 {
                     "role": "system",
                     "content": system_prompt
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_1_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_1
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_2_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_2
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_3_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_3
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_4_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_4
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encode_image('images/compressed/examples_5_comp.png')}", "detail": "high"}}
-                    ]
-                },
-                {
-                    "role": "assistant",
-                    "content": gt_examples_5
                 },
                 {
                     "role": "user",

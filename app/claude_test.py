@@ -3,13 +3,13 @@ import os, base64
 from pathlib import Path
 
 # Import self-made modules
-from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file, natural_sort_files, read_an_OCR_output_file
+from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env_file, is_a_file_an_image, save_results_to_file, natural_sort_files, read_ground_truth_file, read_an_OCR_output_file
 
 # Import Anthropic SDK modules
 from anthropic import Anthropic
 
 # Define the OCR service being used
-SERVICE = OcrService.PSEUDO5
+SERVICE = OcrService.PSEUDO17
 
 # Load environment variables
 load_env_file()
@@ -77,11 +77,57 @@ def analyse_read():
             print(f"Warning: Mistral output file not found: {mistral_filepath}")
             continue
 
+        # Read an output from OPENAI AI service
+        openai_filename = f"gpt_prompt_eng_7_examples_{Path(image_path).stem}.txt"
+        openai_filepath = Path('results/gpt_prompt_eng_7_examples') / openai_filename
+        openai_output = read_an_OCR_output_file(openai_filename, openai_filepath)
+        if not openai_output:
+            print(f"Warning: OpenAI output file not found: {openai_filepath}")
+            continue
+
+        # print(openai_output)
+
+        # Read all example ground truth files
+        gt_examples = read_ground_truth_file()
+        gt_examples_1, gt_examples_2, gt_examples_3, gt_examples_4, gt_examples_5, gt_examples_6, gt_examples_7 = gt_examples
+
+        # 1. To assist you in the transcription, below is Mistral's attempt at extracting text from this image. Note, Mistral can be incorrect, but you can use it to help in your transcription.
+        # <mistral_output>
+        # {mistral_output}
+        # </mistral_output>
+
+        # prompt = f"""
+        # Transcribe the text in this image exactly. Here is a list of the steps that can help you in the transcription:
+
+        # <steps>
+        # 1. Transcribe the text in this order: From left to right, top to bottom.
+        # 2. When you see a crossed-out word or letter, skip it.
+        # 3. When you see an insertion sign, insert the inserted text to where the sign points to.
+        # 4. At the end of the transcription, revise your solution and make sure that you have not transcribed any crossed-out text, you have inserted the inserted text to where the sign points to, and you have not corrected typos, syntax, or logical mistakes. For example:
+
+        # <examples>
+        # - If you see a Java function that misses some curly braces, do not add them.
+        # - If you see a Java function that contains redundant curly braces, do not remove them.
+        # - If you see a typo or logical mistake, do not correct it.
+        # </examples>
+
+        # </steps>
+        # """
+
         prompt = f"""
-        Transcribe the text in this image exactly. Output a line of text per line of text in the document. To assist you in the transcription, below is Mistral's attempt at extracting text from this image. Note, Mistral can be incorrect, but you can use it to help in your transcription.
+        Transcribe the text in this image exactly. Output a line of text per line of text in the document. To assist you in the transcription, below are Mistral's and OpenAI's attempts at extracting text from this image. Note, Mistral and OpenAI can be incorrect, but you can use them to help in your transcription.
         <mistral_output>
         {mistral_output}
         </mistral_output>
+        <openai_output>
+        {openai_output}
+        </openai_output>
+        <instructions>
+        You should follow these rules strictly:
+        1. Do not correct any typos, syntax errors, or logical errors you may notice. Mistral's output can help you with this, because it does not hallucinate.
+        2. Do NOT transcribe any text that is crossed out. OpenAI's output can help you with this, because it handles crossed-out text very well. However, does not rely on it regrading the first rule, because it can hallucinate.
+        3. When you see an insertion sign indicated in the image, please insert the inserted text to where the sign points to.
+        </instructions>
         """
 
         system_prompt = """
@@ -89,6 +135,18 @@ def analyse_read():
         """
 
         message_list = [
+            # # Examples: Syntax and logical errors
+            # {"role": 'user', "content": [
+            #     {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_1_comp.png")}},
+            #     {"type": "text", "text": prompt}
+            # ]},
+            # {"role": "assistant", "content": gt_examples_1},
+            # # Examples: Syntax and logical errors
+            # {"role": 'user', "content": [
+            #     {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image("images/compressed/examples_2_comp.png")}},
+            #     {"type": "text", "text": prompt}
+            # ]},
+            # {"role": "assistant", "content": gt_examples_2},
             {"role": 'user', "content": [
                 {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": get_base64_encoded_image(image_path)}},
                 {"type": "text", "text": prompt}

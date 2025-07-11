@@ -8,29 +8,37 @@ class OcrService(StrEnum):
     AZURE = 'azure'
     MISTRAL = 'mistral'
     # OPENAI = 'gpt'
-    PSEUDO6 = 'gpt_no_prompt_eng'
-    PSEUDO7 = 'gpt_prompt_eng_no_examples'
-    PSEUDO8 = 'gpt_prompt_eng_5_examples'
-    PSEUDO9 = 'gpt_prompt_eng_7_examples'
+    # PSEUDO6 = 'gpt_no_prompt_eng'
+    # PSEUDO7 = 'gpt_prompt_eng_no_examples'
+    # PSEUDO8 = 'gpt_prompt_eng_1_example'
+    # PSEUDO9 = 'gpt_prompt_eng_3_examples'
+    # PSEUDO10 = 'gpt_prompt_eng_5_examples'
+    # PSEUDO11 = 'gpt_prompt_eng_7_examples'
+    # PSEUDO12 = 'gpt_4.5_preview_prompt_eng_5_examples'
+    # PSEUDO13 = 'gpt_4o_mini_prompt_eng_5_examples'
+    # PSEUDO14 = 'combined_azure_gpt'
+    # PSEUDO15 = 'combined_mistral_gpt'
     # ANTHROPIC = 'claude'
     PSEUDO1 = 'claude_no_prompt_eng'
     PSEUDO2 = 'claude_prompt_eng_no_examples'
     PSEUDO3 = 'claude_prompt_eng_5_set_examples'
     PSEUDO4 = 'claude_prompt_eng_7_set_examples'
     PSEUDO5 = 'combined_mistral_claude'
+    PSEUDO16 = 'combined_azure_claude'
+    PSEUDO17 = 'claude_mistral_gpt'
 
 # Tuple of compressed image names to process for OCR (manually input)
 PROCESSED_OCR_IMAGES = (
-    'exam_1_comp.png',
-    'exam_2_comp.png',
-    'exam_4_comp.png',
-    'exam_5_comp.png',
+    # 'exam_1_comp.png',
+    # 'exam_2_comp.png',
+    # 'exam_4_comp.png',
+    # 'exam_5_comp.png',
     'exam_6_comp.png',
-    'exam_7_comp.png',
-    'exam_8_comp.png',
+    # 'exam_7_comp.png',
+    # 'exam_8_comp.png',
     'exam_11_comp.png',
-    'exam_12_comp.png',
-    'exam_89_comp.png',
+    # 'exam_12_comp.png',
+    # 'exam_89_comp.png',
 )
 
 def load_env_file():
@@ -112,6 +120,15 @@ def save_results_to_file(ocr_name, results, file_name, results_dir):
     with open(result_file_path, 'w', encoding='utf-8') as f:
         f.write(results)
     print(f"Results saved to {result_file_path}")
+
+def read_an_OCR_output_file(ocr_filename, ocr_filepath):
+    ocr_output = None
+    if ocr_filepath.exists():
+        with open(ocr_filepath, 'r', encoding='utf-8') as f:
+            ocr_output = f.read()
+    else:
+        print(f"Warning: OCR output file not found: {ocr_filepath}")
+    return ocr_output
 
 class HandwritingColor(StrEnum):
     BLACK = auto()

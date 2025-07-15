@@ -4,8 +4,12 @@ from PIL import Image
 import glob
 
 IMAGES_TO_BE_COMPRESSED = [
-    'examples_6.png',
-    'examples_7.png',
+    # 'example_1.png',
+    # 'example_2.png',
+    # 'example_4.png',
+    # 'example_5.png',
+    # 'example_6.png',
+    'example_7.png',
 ]
 
 def compress_images():

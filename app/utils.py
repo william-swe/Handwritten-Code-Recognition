@@ -1,12 +1,17 @@
+import base64, os
 from enum import StrEnum, auto
 from pathlib import Path
+
+# Import Anthropic SDK modules
+from anthropic import Anthropic
 
 # Enum for OCR service names
 # This allows for easy reference to different OCR services used in the application.
 # All used services are listed here, and they can be extended in the future if needed.
 class OcrService(StrEnum):
-    AZURE = 'azure'
-    MISTRAL = 'mistral'
+    # AZURE = 'azure'
+    # MISTRAL = 'mistral'
+
     # OPENAI = 'gpt'
     # PSEUDO6 = 'gpt_no_prompt_eng'
     # PSEUDO7 = 'gpt_prompt_eng_no_examples'
@@ -16,30 +21,60 @@ class OcrService(StrEnum):
     # PSEUDO11 = 'gpt_prompt_eng_7_examples'
     # PSEUDO12 = 'gpt_4.5_preview_prompt_eng_5_examples'
     # PSEUDO13 = 'gpt_4o_mini_prompt_eng_5_examples'
+
     # PSEUDO14 = 'combined_azure_gpt'
     # PSEUDO15 = 'combined_mistral_gpt'
+    # PSEUDO5 = 'combined_mistral_claude'
+    # PSEUDO16 = 'combined_azure_claude'
+    # PSEUDO17 = 'claude_mistral_gpt'
+
     # ANTHROPIC = 'claude'
-    PSEUDO1 = 'claude_no_prompt_eng'
-    PSEUDO2 = 'claude_prompt_eng_no_examples'
-    PSEUDO3 = 'claude_prompt_eng_5_set_examples'
-    PSEUDO4 = 'claude_prompt_eng_7_set_examples'
-    PSEUDO5 = 'combined_mistral_claude'
-    PSEUDO16 = 'combined_azure_claude'
-    PSEUDO17 = 'claude_mistral_gpt'
+    # PSEUDO1 = 'claude_no_prompt_eng'
+    # PSEUDO2 = 'claude_prompt_eng_no_examples'
+    # PSEUDO3 = 'claude_prompt_eng_5_set_examples'
+    # PSEUDO4 = 'claude_prompt_eng_7_set_examples'
+
+    # PSEUDO18 = 'claude_cot_no_fh_opus_4'
+    # PSEUDO19 = 'claude_cot_1_fh_opus_4'
+    # PSEUDO20 = 'claude_cot_1_fh_3_7_sonnet'
+    PSEUDO21 = 'claude_cot_2_fh_3_7_sonnet' # example 24 + 33
+    # PSEUDO22 = 'claude_cot_no_fh_3_5_sonnet_latest'
+    # PSEUDO23 = 'claude_cot_1_fh_3_5_sonnet_latest' # example 24
+    # PSEUDO24 = 'claude_cot_2_fh_3_5_sonnet_latest' # example 24 + 31/33
+    # PSEUDO25 = 'claude_cot_6_fh_3_5_sonnet_latest'
 
 # Tuple of compressed image names to process for OCR (manually input)
 PROCESSED_OCR_IMAGES = (
-    # 'exam_1_comp.png',
-    # 'exam_2_comp.png',
-    # 'exam_4_comp.png',
-    # 'exam_5_comp.png',
+    'exam_1_comp.png',
+    'exam_2_comp.png',
+    'exam_4_comp.png',
+    'exam_5_comp.png',
     'exam_6_comp.png',
-    # 'exam_7_comp.png',
-    # 'exam_8_comp.png',
+    'exam_7_comp.png',
+    'exam_8_comp.png',
     'exam_11_comp.png',
-    # 'exam_12_comp.png',
-    # 'exam_89_comp.png',
+    'exam_12_comp.png',
+    'exam_89_comp.png',
 )
+
+CLAUDE_SERVICE_PRICES = {
+    "claude-opus-4-0": {
+        "input_token": 15/10**6,  # $15 per million input tokens
+        "output_token": 75/10**6  # $75 per million output tokens
+    },
+    "claude-sonnet-4-0": {
+        "input_token": 3/10**6,  # $3 per million input tokens
+        "output_token": 15/10**6  # $15 per million output tokens
+    },
+    "claude-3-5-sonnet-latest": {
+        "input_token": 3/10**6,  # $3 per million input tokens
+        "output_token": 15/10**6  # $15 per million output tokens
+    },
+    "claude-3-7-sonnet-latest": {
+        "input_token": 3/10**6,  # $3 per million input tokens
+        "output_token": 15/10**6  # $15 per million output tokens
+    },
+}
 
 def load_env_file():
     '''
@@ -129,6 +164,149 @@ def read_an_OCR_output_file(ocr_filename, ocr_filepath):
     else:
         print(f"Warning: OCR output file not found: {ocr_filepath}")
     return ocr_output
+
+def natural_sort_files(file_list):
+    import re
+    return sorted(file_list, key=lambda s: [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', Path(s).name)])
+
+def get_base64_encoded_image(image_path):
+    with open(image_path, "rb") as image_file:
+        binary_data = image_file.read()
+        base_64_encoded_data = base64.b64encode(binary_data)
+        base64_string = base_64_encoded_data.decode('utf-8')
+        return base64_string
+
+def extract_answer_from_tag(text: str) -> str:
+    """
+    Extracts and returns the content inside the first <answer>...</answer> tag in the string, with leading/trailing whitespace removed.
+    If no such tag is found, returns the original string stripped.
+    """
+    import re
+    match = re.search(r'<answer>(.*?)</answer>', text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return text.strip()
+
+def claude_analyse_read(service_name: OcrService, model: str, max_tokens: int, temperature: int, message_list: list, system_prompt: str = None):
+    # Check if the service_name is a valid OcrService enum
+    if not isinstance(service_name, OcrService):
+        raise ValueError(f"Invalid OCR service name: {service_name}. Must be an instance of OcrService enum.")
+
+    # Check if the system prompt is provided
+    if not system_prompt:
+        print("System prompt is not provided. Using default system prompt for Claude AI service.")
+        system_prompt = "You are a perfect OCR assistant for extracting text from images without producing hallucinations."
+
+    # Load environment variables
+    load_env_file()
+
+    # Access Claude API key from environment variables
+    api_key = os.getenv("CLAUDE_API_KEY")
+
+    # Check if the API key is set
+    if not api_key:
+        print("CLAUDE_API_KEY is not set in the .env file.")
+        exit(1)
+
+    # Create a Claude client
+    print("Connecting to Claude AI service...\n")
+    client = Anthropic(api_key=api_key)
+
+    # Define directories and get image files
+    images_dir, image_files, results_dir = define_directories(service_name)
+
+    # Only process images in PROCESSED_OCR_IMAGES and sort them naturally
+    image_files = [f for f in image_files if Path(f).name in PROCESSED_OCR_IMAGES]
+    image_files = natural_sort_files(image_files)
+
+    if not image_files:
+        print(f"No images found in {images_dir}.")
+        return
+
+    print('---------- Claude service analysis started ----------')
+
+    token_usage_rows = []
+    total_input_tokens = 0
+    total_output_tokens = 0
+    for image_path in image_files:
+        # Check if the file is an image
+        if not is_a_file_an_image(image_path):
+            print(f"\nSkipping {Path(image_path).name}, not a supported image format.")
+            continue
+
+        # Insert the image to the prompt
+        message_list[-2]["content"][0]["source"]["data"] = get_base64_encoded_image(image_path)
+
+        print(f"\nAnalysing {Path(image_path).name} by {model}...")
+
+        # Send the request to the Claude API
+        response = client.messages.create(
+            model=model,
+            system=system_prompt,
+            messages=message_list,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+
+        # Clean and save recognised text to file
+        cleaned_text = extract_answer_from_tag(response.content[0].text)
+        save_results_to_file(service_name, cleaned_text, Path(image_path).stem, results_dir)
+
+        # Track token usage
+        usage = getattr(response, 'usage', None)
+        input_tokens = output_tokens = ''
+        if usage:
+            input_tokens = getattr(usage, 'input_tokens', '')
+            output_tokens = getattr(usage, 'output_tokens', '')
+            # Accumulate totals for price calculation
+            if isinstance(input_tokens, int):
+                total_input_tokens += input_tokens
+            elif str(input_tokens).isdigit():
+                total_input_tokens += int(input_tokens)
+            if isinstance(output_tokens, int):
+                total_output_tokens += output_tokens
+            elif str(output_tokens).isdigit():
+                total_output_tokens += int(output_tokens)
+        token_usage_rows.append(f"| {Path(image_path).name} | {input_tokens} | {output_tokens} |\n")
+
+    # Write token usage table to Markdown file in the Claude results directory
+    token_usage_path = results_dir / 'claude_token_usage.md'
+    # Write header if file does not exist
+    if not token_usage_path.exists():
+        with open(token_usage_path, 'w', encoding='utf-8') as f:
+            f.write("| OCR Input File | Input Tokens | Output Tokens |\n|:---:|:---:|:---:|\n")
+    # Append rows
+    with open(token_usage_path, 'a', encoding='utf-8') as f:
+        for row in token_usage_rows:
+            f.write(row)
+    # Compute and append averages if any rows were written
+    if token_usage_rows:
+        try:
+            input_sum = sum(int(row.split('|')[2].strip()) for row in token_usage_rows if row.split('|')[2].strip().isdigit())
+            output_sum = sum(int(row.split('|')[3].strip()) for row in token_usage_rows if row.split('|')[3].strip().isdigit())
+            count = len([row for row in token_usage_rows if row.split('|')[2].strip().isdigit() and row.split('|')[3].strip().isdigit()])
+            if count > 0:
+                avg_input = round(input_sum / count, 1)
+                avg_output = round(output_sum / count, 1)
+                with open(token_usage_path, 'a', encoding='utf-8') as f:
+                    f.write(f"| **Average** | {avg_input} | {avg_output} |\n")
+        except Exception as e:
+            print(f"Error calculating averages for token usage: {e}")
+
+    # Calculate and append total price usage
+    price_info = CLAUDE_SERVICE_PRICES.get(model, None)
+    total_price = None
+    if price_info:
+        input_price = price_info.get("input_token", 0)
+        output_price = price_info.get("output_token", 0)
+        total_price = (total_input_tokens * input_price) + (total_output_tokens * output_price)
+        with open(token_usage_path, 'a', encoding='utf-8') as f:
+            f.write(f"\n**Total price usage for model '{model}': ${total_price:.4f}**\n")
+    else:
+        with open(token_usage_path, 'a', encoding='utf-8') as f:
+            f.write(f"\n**Total price usage for model '{model}': Unknown (model not in CLAUDE_SERVICE_PRICES)**\n")
+
+    print('\n---------- Claude service analysis finished ----------')
 
 class HandwritingColor(StrEnum):
     BLACK = auto()
@@ -669,7 +847,3 @@ image_tags: dict[str, set[StrEnum]] = {
         HandwritingDeletion.CROSS_OUT_WORDS
     } # MARKED
 }
-
-def natural_sort_files(file_list):
-    import re
-    return sorted(file_list, key=lambda s: [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', Path(s).name)])

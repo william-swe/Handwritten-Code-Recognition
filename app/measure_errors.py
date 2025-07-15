@@ -1,28 +1,38 @@
 import Levenshtein, re
 from pathlib import Path
 from utils import OcrService
-import matplotlib.pyplot as plt  # Add this import
+import matplotlib.pyplot as plt
+
+MAX_COUNTER = 3
 
 def collect_levenshtein_distances():
     # Collect Levenshtein distances for all services and ground truth files
     gt_dir = Path(__file__).resolve().parent.parent / 'ground_truth'
-    all_gt_files = sorted([f for f in gt_dir.glob('*.txt')], key=lambda s: [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s.name)])
+    # Only include ground truth files that match the pattern exam_<number>.txt or exam_<number1>_<number2>.txt
+    all_gt_files = sorted([f for f in gt_dir.glob('*.txt') if re.match(r'exam_\d+(?:_\d+)?\.txt$', f.name)], key=lambda s: [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s.name)])
     services = list(OcrService)
-    ld_table = {}  # {gt_file: {service: NLD}}
+    # Group files by exam_<num1>
+    gt_grouped = {}
+    for f in all_gt_files:
+        m = re.match(r'(exam_\d+)(?:_\d+)?\.txt$', f.name)
+        if m:
+            base = m.group(1)
+            gt_grouped.setdefault(base, []).append(f)
+
+    ld_table = {}  # {exam_<num1>: {service: NLD}}
     avg_nld = {service: [] for service in services}
-    for gt_file in all_gt_files:
-        gt_name = gt_file.name
-        with open(gt_file, 'r', encoding='utf-8') as f:
-            gt_text = f.read()
-        ld_table[gt_name] = {}
+    for base, files in gt_grouped.items():
+        ld_table[base + '.txt'] = {}
         for service in services:
             results_dir = Path(__file__).resolve().parent.parent / 'results' / service
-            # Find corresponding result file
-            pattern = f'{service}_{gt_name.replace(".txt", "_comp.txt")}'
+            pattern = f'{service}_{base}_comp.txt'
             result_file = results_dir / pattern
-            if not result_file.exists():
-                nld = ''
-            else:
+            best_nld = ''
+            for gt_file in files:
+                with open(gt_file, 'r', encoding='utf-8') as fgt:
+                    gt_text = fgt.read()
+                if not result_file.exists():
+                    continue
                 with open(result_file, 'r', encoding='utf-8') as f:
                     ocr_text = f.read()
                 if not gt_text.strip() and not ocr_text.strip():
@@ -30,8 +40,11 @@ def collect_levenshtein_distances():
                 else:
                     lev_dist = Levenshtein.distance(gt_text, ocr_text)
                     nld = 1 - lev_dist / max(len(gt_text), len(ocr_text))
-                    avg_nld[service].append(nld)
-            ld_table[gt_name][service] = nld
+                if best_nld == '' or (isinstance(nld, float) and nld > best_nld):
+                    best_nld = nld
+            if best_nld != '':
+                avg_nld[service].append(best_nld)
+            ld_table[base + '.txt'][service] = best_nld
     # Calculate averages
     avg_row = {service: (sum(avg_nld[service])/len(avg_nld[service]) if avg_nld[service] else 0) for service in services}
     return ld_table, avg_row, services
@@ -59,46 +72,86 @@ def get_average_normalized_levenshtein(service_name: str, output_lines, summary_
     results_dir = Path(__file__).resolve().parent.parent / 'results' / service
     gt_dir = Path(__file__).resolve().parent.parent / 'ground_truth'
 
+    # Group ground truth files by canonical (exam_<num>.txt)
+    gt_files_all = sorted([f for f in gt_dir.glob('*.txt') if re.match(r'exam_\d+(?:_\d+)?\.txt$', f.name)], key=lambda s: [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s.name)])
+    gt_grouped = {}
+    for f in gt_files_all:
+        m = re.match(r'(exam_\d+)(?:_\d+)?\.txt$', f.name)
+        if m:
+            base = m.group(1)
+            gt_grouped.setdefault(base, []).append(f)
+
     # Find all result files for this service
     result_files = list(results_dir.glob(f'{service}_*.txt'))
-    if not result_files:
-        return
-
-    # Sort result files by filename (natural sort for numbers)
     def natural_key(s):
         return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s.name)]
     result_files = sorted(result_files, key=natural_key)
 
-    nld_list = []
-    ld_list = []
-    table_rows = []  # For Markdown table
+    # Build a mapping from canonical base (exam_<num>) to all result files for its splits
+    result_files_by_canonical = {}
     for result_file in result_files:
-        # Extract the base name (e.g., logic_4_comp from azure_logic_4_comp.txt)
-        m = re.match(rf'{service}_(.*)\.txt', result_file.name)
+        m = re.match(rf'{service}_(exam_\d+(?:_\d+)?)_comp\.txt', result_file.name)
         if not m:
             continue
         base = m.group(1)
-        # Try to find the corresponding ground truth file
-        # Remove _comp if present, and service prefix
-        gt_base = base.replace('_comp', '')
-        gt_file = gt_dir / f'{gt_base}.txt'
-        if not gt_file.exists():
-            continue
-        if summary_gt_files is not None and gt_file.name not in summary_gt_files:
-            continue  # Only include files in the summary table
-        with open(gt_file, 'r', encoding='utf-8') as f:
-            gt_text = f.read()
-        with open(result_file, 'r', encoding='utf-8') as f:
-            ocr_text = f.read()
-        if not gt_text.strip() and not ocr_text.strip():
-            nld = 0.0
-            lev_dist = 0
+        # Canonical base is exam_<num>
+        canonical_base = re.match(r'(exam_\d+)', base).group(1)
+        result_files_by_canonical.setdefault(canonical_base, []).append(result_file)
+
+    # If summary_gt_files is provided, use only those canonical ground truths (exam_<num>.txt)
+    if summary_gt_files is not None:
+        canonical_gt_names = [re.match(r'(exam_\d+)', f).group(1) for f in summary_gt_files if re.match(r'exam_\d+\.txt$', f)]
+    else:
+        canonical_gt_names = sorted(result_files_by_canonical.keys(), key=lambda s: [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s)])
+
+    nld_list = []
+    ld_list = []
+    table_rows = []
+
+    for canonical_base in canonical_gt_names:
+        # All result files for this canonical (splits)
+        split_result_files = result_files_by_canonical.get(canonical_base, [])
+        best_nld = None
+        best_ld = None
+        best_result_file = None
+        best_gt_file = None
+        # For each split result file, compare to all ground truths for this canonical
+        for result_file in split_result_files:
+            gt_files_to_compare = gt_grouped.get(canonical_base, [])
+            if not gt_files_to_compare:
+                continue
+            with open(result_file, 'r', encoding='utf-8') as f:
+                ocr_text = f.read()
+            for gt_file_candidate in gt_files_to_compare:
+                with open(gt_file_candidate, 'r', encoding='utf-8') as fgt:
+                    gt_text = fgt.read()
+                if not gt_text.strip() and not ocr_text.strip():
+                    nld = 0.0
+                    lev_dist = 0
+                else:
+                    lev_dist = Levenshtein.distance(gt_text, ocr_text)
+                    nld = 1 - lev_dist / max(len(gt_text), len(ocr_text))
+                if (best_nld is None) or (nld > best_nld):
+                    best_nld = nld
+                    best_ld = lev_dist
+                    best_result_file = result_file
+                    best_gt_file = gt_file_candidate
+        canonical_gt_name = canonical_base + '.txt'
+        if best_nld is not None:
+            nld_list.append(best_nld)
+            ld_list.append(best_ld)
+            table_rows.append((best_result_file.name, canonical_gt_name, best_ld, best_nld))
         else:
-            lev_dist = Levenshtein.distance(gt_text, ocr_text)
-            nld = 1 - lev_dist / max(len(gt_text), len(ocr_text))
-        nld_list.append(nld)
-        ld_list.append(lev_dist)
-        table_rows.append((result_file.name, gt_file.name, lev_dist, nld))
+            # No result for this service/canonical ground truth, add a row with blanks
+            table_rows.append(("-", canonical_gt_name, '-', '-'))
+
+    # Sort table_rows by ground truth file name (exam_1.txt, exam_2.txt, ...)
+    def gt_sort_key(row):
+        # row[1] is canonical_gt_name, e.g., exam_1.txt
+        parts = re.split(r'(\d+)', row[1])
+        return [int(p) if p.isdigit() else p.lower() for p in parts]
+    table_rows = sorted(table_rows, key=gt_sort_key)
+
     if nld_list:
         avg_nld = sum(nld_list) / len(nld_list)
     else:

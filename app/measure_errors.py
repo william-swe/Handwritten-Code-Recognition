@@ -166,7 +166,10 @@ def get_average_normalized_levenshtein(service_name: str, output_lines, summary_
         output_lines.append("| OCR Output File | Ground Truth File | Levenshtein Distance | NLD |\n")
         output_lines.append("|:---:|:---:|:---:|:---:|\n")
         for row in table_rows:
-            output_lines.append(f"| {row[0]} | {row[1]} | {row[2]} | {row[3]:.4f} |\n")
+            if isinstance(row[3], float):
+                output_lines.append(f"| {row[0]} | {row[1]} | {row[2]} | {row[3]:.4f} |\n")
+            else:
+                output_lines.append(f"| {row[0]} | {row[1]} | {row[2]} | {row[3]} |\n")
         output_lines.append(f"| **Average** |  | **{avg_ld:.2f}** | **{avg_nld:.4f}** |\n")
         output_lines.append("\n")
 

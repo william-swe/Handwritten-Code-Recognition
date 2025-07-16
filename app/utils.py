@@ -2,8 +2,9 @@ import base64, os
 from enum import StrEnum, auto
 from pathlib import Path
 
-# Import Anthropic SDK modules
+# Import SDK modules
 from anthropic import Anthropic
+from openai import OpenAI
 
 # Enum for OCR service names
 # This allows for easy reference to different OCR services used in the application.
@@ -37,24 +38,31 @@ class OcrService(StrEnum):
     # PSEUDO18 = 'claude_cot_no_fh_opus_4'
     # PSEUDO19 = 'claude_cot_1_fh_opus_4'
     # PSEUDO20 = 'claude_cot_1_fh_3_7_sonnet'
-    PSEUDO21 = 'claude_cot_2_fh_3_7_sonnet' # example 24 + 33
+    # PSEUDO21 = 'claude_cot_2_fh_3_7_sonnet' # example 24 + 33
     # PSEUDO22 = 'claude_cot_no_fh_3_5_sonnet_latest'
     # PSEUDO23 = 'claude_cot_1_fh_3_5_sonnet_latest' # example 24
     # PSEUDO24 = 'claude_cot_2_fh_3_5_sonnet_latest' # example 24 + 31/33
     # PSEUDO25 = 'claude_cot_6_fh_3_5_sonnet_latest'
+    # PSEUDO28 = 'claude_cot_3_fh_3_7_sonnet' # example 24 + 6 + 12
+    # PSEUDO29 = 'claude_no_cot_3_fh_3_7_sonnet' # example 24 + 6 + 12
+    # PSEUDO30 = 'test_claude_no_cot_3_fh_3_7_sonnet' # example 24 + similar examples to exam_6 + exam_12
+    PSEUDO31 = 'claude_cot_x_fh_3_7_sonnet_latest' # for testing
+
+    # PSEUDO26 = 'gpt_cot_2_fh_4_1' # example 24 + 33
+    # PSEUDO27 = 'gpt_cot_2_fh_4o_mini' # example 24 + 33
 
 # Tuple of compressed image names to process for OCR (manually input)
 PROCESSED_OCR_IMAGES = (
-    'exam_1_comp.png',
-    'exam_2_comp.png',
-    'exam_4_comp.png',
-    'exam_5_comp.png',
+    # 'exam_1_comp.png',
+    # 'exam_2_comp.png',
+    # 'exam_4_comp.png',
+    # 'exam_5_comp.png',
     'exam_6_comp.png',
-    'exam_7_comp.png',
-    'exam_8_comp.png',
-    'exam_11_comp.png',
+    # 'exam_7_comp.png',
+    # 'exam_8_comp.png',
+    # 'exam_11_comp.png',
     'exam_12_comp.png',
-    'exam_89_comp.png',
+    # 'exam_89_comp.png',
 )
 
 CLAUDE_SERVICE_PRICES = {
@@ -67,12 +75,23 @@ CLAUDE_SERVICE_PRICES = {
         "output_token": 15/10**6  # $15 per million output tokens
     },
     "claude-3-5-sonnet-latest": {
-        "input_token": 3/10**6,  # $3 per million input tokens
-        "output_token": 15/10**6  # $15 per million output tokens
+        "input_token": 3/10**6,
+        "output_token": 15/10**6
     },
     "claude-3-7-sonnet-latest": {
-        "input_token": 3/10**6,  # $3 per million input tokens
-        "output_token": 15/10**6  # $15 per million output tokens
+        "input_token": 3/10**6,
+        "output_token": 15/10**6
+    },
+}
+
+GPT_SERVICE_PRICES = {
+    "gpt-4.1": {
+        "input_token": 2/10**6,  # $2 per million input tokens
+        "output_token": 8/10**6  # $8 per million output tokens
+    },
+    "gpt-4o-mini": {
+        "input_token": 1.1/10**6,  # $1.1 per million input tokens
+        "output_token": 4.4/10**6  # $4.4 per million output tokens
     },
 }
 
@@ -187,7 +206,7 @@ def extract_answer_from_tag(text: str) -> str:
         return match.group(1).strip()
     return text.strip()
 
-def claude_analyse_read(service_name: OcrService, model: str, max_tokens: int, temperature: int, message_list: list, system_prompt: str = None):
+def claude_analyse_read(service_name: OcrService, model: str, max_tokens: int, temperature: int, message_list: list[dict], system_prompt: str):
     # Check if the service_name is a valid OcrService enum
     if not isinstance(service_name, OcrService):
         raise ValueError(f"Invalid OCR service name: {service_name}. Must be an instance of OcrService enum.")
@@ -307,6 +326,121 @@ def claude_analyse_read(service_name: OcrService, model: str, max_tokens: int, t
             f.write(f"\n**Total price usage for model '{model}': Unknown (model not in CLAUDE_SERVICE_PRICES)**\n")
 
     print('\n---------- Claude service analysis finished ----------')
+
+def gpt_analyse_read(service_name: OcrService, model: str, max_tokens: int, temperature: int, messages: list[dict]):
+    # Check if the service_name is a valid OcrService enum
+    if not isinstance(service_name, OcrService):
+        raise ValueError(f"Invalid OCR service name: {service_name}. Must be an instance of OcrService enum.")
+
+    # Load environment variables
+    load_env_file()
+
+    # Access Claude API key from environment variables
+    api_key = os.getenv("OPENAI_API_KEY")
+
+    # Check if the API key is set
+    if not api_key:
+        print("OPENAI_API_KEY is not set in the .env file.")
+        exit(1)
+
+    # Create a GPT client
+    print("Connecting to GPT AI service...\n")
+    client = OpenAI(api_key=api_key)
+
+    # Define directories and get image files
+    images_dir, image_files, results_dir = define_directories(service_name)
+
+    # Only process images in PROCESSED_OCR_IMAGES and sort them naturally
+    image_files = [f for f in image_files if Path(f).name in PROCESSED_OCR_IMAGES]
+    image_files = natural_sort_files(image_files)
+
+    if not image_files:
+        print(f"No images found in {images_dir}.")
+        return
+
+    print('---------- OpenAI service analysis started ----------')
+
+    token_usage_rows = []
+    total_input_tokens = 0
+    total_output_tokens = 0
+    for image_path in image_files:
+        # Check if the file is an image
+        if not is_a_file_an_image(image_path):
+            print(f"\nSkipping {Path(image_path).name}, not a supported image format.")
+            continue
+
+        # Insert the image to the prompt
+        messages[-2]["content"][0]["image_url"]["url"] = f"data:image/png;base64,{get_base64_encoded_image(image_path)}"
+
+        print(f"\nAnalysing {Path(image_path).name} by {model}...")
+
+        # Send the request to the OpenAI API
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+
+        # Clean and save recognised text to file
+        cleaned_text = extract_answer_from_tag(response.choices[0].message.content)
+        save_results_to_file(service_name, cleaned_text, Path(image_path).stem, results_dir)
+
+        # Track token usage
+        usage = getattr(response, 'usage', None)
+        input_tokens = output_tokens = ''
+        if usage:
+            input_tokens = getattr(usage, 'prompt_tokens', '')
+            output_tokens = getattr(usage, 'completion_tokens', '')
+            # Accumulate totals for price calculation
+            if isinstance(input_tokens, int):
+                total_input_tokens += input_tokens
+            elif str(input_tokens).isdigit():
+                total_input_tokens += int(input_tokens)
+            if isinstance(output_tokens, int):
+                total_output_tokens += output_tokens
+            elif str(output_tokens).isdigit():
+                total_output_tokens += int(output_tokens)
+        token_usage_rows.append(f"| {Path(image_path).name} | {input_tokens} | {output_tokens} |\n")
+
+    # Write token usage table to Markdown file in the GPT results directory
+    token_usage_path = results_dir / 'gpt_token_usage.md'
+    # Write header if file does not exist
+    if not token_usage_path.exists():
+        with open(token_usage_path, 'w', encoding='utf-8') as f:
+            f.write("| OCR Input File | Input Tokens | Output Tokens |\n|:---:|:---:|:---:|\n")
+    # Append rows
+    with open(token_usage_path, 'a', encoding='utf-8') as f:
+        for row in token_usage_rows:
+            f.write(row)
+    # Compute and append averages if any rows were written
+    if token_usage_rows:
+        try:
+            input_sum = sum(int(row.split('|')[2].strip()) for row in token_usage_rows if row.split('|')[2].strip().isdigit())
+            output_sum = sum(int(row.split('|')[3].strip()) for row in token_usage_rows if row.split('|')[3].strip().isdigit())
+            count = len([row for row in token_usage_rows if row.split('|')[2].strip().isdigit() and row.split('|')[3].strip().isdigit()])
+            if count > 0:
+                avg_input = round(input_sum / count, 1)
+                avg_output = round(output_sum / count, 1)
+                with open(token_usage_path, 'a', encoding='utf-8') as f:
+                    f.write(f"| **Average** | {avg_input} | {avg_output} |\n")
+        except Exception as e:
+            print(f"Error calculating averages for token usage: {e}")
+
+    # Calculate and append total price usage
+    price_info = GPT_SERVICE_PRICES.get(model, None)
+    total_price = None
+    if price_info:
+        input_price = price_info.get("input_token", 0)
+        output_price = price_info.get("output_token", 0)
+        total_price = (total_input_tokens * input_price) + (total_output_tokens * output_price)
+        with open(token_usage_path, 'a', encoding='utf-8') as f:
+            f.write(f"\n**Total price usage for model '{model}': ${total_price:.4f}**\n")
+    else:
+        with open(token_usage_path, 'a', encoding='utf-8') as f:
+            f.write(f"\n**Total price usage for model '{model}': Unknown (model not in GPT_SERVICE_PRICES)**\n")
+
+    print('\n---------- GPT service analysis finished ----------')
 
 class HandwritingColor(StrEnum):
     BLACK = auto()

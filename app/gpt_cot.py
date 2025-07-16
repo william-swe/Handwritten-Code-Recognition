@@ -2,13 +2,11 @@
 from pathlib import Path
 
 # Import self-made modules
-from utils import OcrService, get_base64_encoded_image, claude_analyse_read
+from utils import OcrService, get_base64_encoded_image, gpt_analyse_read
 
 # Define the OCR service being used and its model
-SERVICE = OcrService.PSEUDO31
-# MODEL_NAME = "claude-opus-4-0"
-MODEL_NAME = "claude-3-5-sonnet-latest"
-# MODEL_NAME = "claude-3-7-sonnet-latest"
+SERVICE = OcrService.PSEUDO27
+MODEL_NAME = "gpt-4o-mini"
 
 system_prompt = "You are a perfect OCR assistant for extracting text from images without producing hallucinations."
 
@@ -19,7 +17,7 @@ prompt = """
         1. If you encounter a strikethrough or crossed-out word, you will ignore it.
         2. If you see an insertion sign, including (but not limited to) a caret ("^" or "v") or an arrow, you will insert the text at the indicated position.
         3. If you see a typo, a Java spelling/syntax mistake or a Java logical error, you never correct it, you will read the text as it is.
-        4. Place the transcribed text inside this XML tag: <answer>your text here</answer>
+        4. Place the transcribed text inside this XML tag: <answer>your text here</answer>.
     </steps>
 </instructions>
 <question>
@@ -30,14 +28,11 @@ prompt = """
 # List of example numbers
 examples = tuple([
     24, # exam_24
-    # 33, # exam_33
-    # 48, # exam_48
-    # 58, # exam_58
-    # 36, # exam_36
-    # 31, # exam_31
-    # 6,  # exam_6
-    # 12, # exam_12
-    # -1, # exam_-1 (similar to exam_6/12, but with different text)
+    33, # exam_33
+    48, # exam_48
+    58, # exam_58
+    36, # exam_36
+    31, # exam_31
 ])
 
 # Prepare example file paths and load their contents
@@ -51,7 +46,7 @@ for ex_num in examples:
     exp_text = exp_path.read_text(encoding="utf-8") if exp_path.exists() else None
 
     if not encoded_img or not exp_text:
-        print(f"\033[93mWARNING: Skipping example {ex_num} due to missing files.\033[0m")
+        print(f"Skipping example {ex_num} due to missing files.")
         continue
 
     example_data.append({
@@ -59,37 +54,35 @@ for ex_num in examples:
         "explanation": exp_text
     })
 
-# Prepare the message list for the Claude API
-message_list = []
-
-# Add all example user/assistant pairs
-for ex in example_data:
-    message_list.append({
-        "role": "user",
-        "content": [
-            {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": ex["encoded_img"]}},
-            {"type": "text", "text": prompt}
-        ]
-    })
-    message_list.append({
-        "role": "assistant",
-        "content": ex["explanation"]
-    })
-
-# Add the main prompt for the actual image
-message_list.append({
-    "role": "user",
-    "content": [
-        {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": ""}},  # Placeholder for actual image data
+# Prepare the message list for the OPENAI API
+messages=[
+    {
+        "role": "system",
+        "content": system_prompt
+    },
+    # Example 24
+    {"role": "user", "content": [
+        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{example_data[0]['encoded_img']}", "detail": "high"}},
         {"type": "text", "text": prompt}
-    ]
-})
-message_list.append({
-    "role": "assistant",
-    "content": "Let's think step by step."
-})
+    ]},
+    {"role": "assistant", "content": example_data[0]["explanation"]},
+
+    # Example 33
+    {"role": "user", "content": [
+        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{example_data[1]['encoded_img']}", "detail": "high"}},
+        {"type": "text", "text": prompt}
+    ]},
+    {"role": "assistant", "content": example_data[1]["explanation"]},
+    
+    # Main prompt for the actual image
+    {"role": "user", "content": [
+        {"type": "image_url", "image_url": {"url": "", "detail": "high"}},  # Placeholder for actual image data
+        {"type": "text", "text": prompt}
+    ]},
+    {"role": "assistant", "content": "Let's think step by step."},
+]
 
 # with open('explaination.txt', 'w', encoding='utf-8') as f:
 #     f.write(f"{example_data[5]['explanation']}\n")
 
-claude_analyse_read(SERVICE, MODEL_NAME, 1024, 0.0, message_list, system_prompt)
+gpt_analyse_read(SERVICE, MODEL_NAME, 1024, 0.0, messages)

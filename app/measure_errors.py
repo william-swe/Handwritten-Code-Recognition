@@ -19,7 +19,7 @@ def collect_levenshtein_distances():
             base = m.group(1)
             gt_grouped.setdefault(base, []).append(f)
 
-    ld_table = {}  # {exam_<num1>: {service: NLD}}
+    ld_table = {}  # {exam_<num1>: {service: (NLD, LD, result_file_name)}}
     avg_nld = {service: [] for service in services}
     for base, files in gt_grouped.items():
         ld_table[base + '.txt'] = {}
@@ -28,6 +28,8 @@ def collect_levenshtein_distances():
             pattern = f'{service}_{base}_comp.txt'
             result_file = results_dir / pattern
             best_nld = ''
+            best_ld = ''
+            best_result_file = ''
             for gt_file in files:
                 with open(gt_file, 'r', encoding='utf-8') as fgt:
                     gt_text = fgt.read()
@@ -37,14 +39,21 @@ def collect_levenshtein_distances():
                     ocr_text = f.read()
                 if not gt_text.strip() and not ocr_text.strip():
                     nld = 1.0
+                    lev_dist = 0
                 else:
                     lev_dist = Levenshtein.distance(gt_text, ocr_text)
                     nld = 1 - lev_dist / max(len(gt_text), len(ocr_text))
                 if best_nld == '' or (isinstance(nld, float) and nld > best_nld):
                     best_nld = nld
+                    best_ld = lev_dist
+                    best_result_file = result_file.name
             if best_nld != '':
                 avg_nld[service].append(best_nld)
-            ld_table[base + '.txt'][service] = best_nld
+            # Store tuple (NLD, LD, result_file_name) or ('', '', '')
+            if best_nld != '':
+                ld_table[base + '.txt'][service] = (best_nld, best_ld, best_result_file)
+            else:
+                ld_table[base + '.txt'][service] = ('', '', '')
     # Calculate averages
     avg_row = {service: (sum(avg_nld[service])/len(avg_nld[service]) if avg_nld[service] else 0) for service in services}
     return ld_table, avg_row, services
@@ -108,42 +117,59 @@ def get_average_normalized_levenshtein(service_name: str, output_lines, summary_
     ld_list = []
     table_rows = []
 
-    for canonical_base in canonical_gt_names:
-        # All result files for this canonical (splits)
-        split_result_files = result_files_by_canonical.get(canonical_base, [])
-        best_nld = None
-        best_ld = None
-        best_result_file = None
-        best_gt_file = None
-        # For each split result file, compare to all ground truths for this canonical
-        for result_file in split_result_files:
-            gt_files_to_compare = gt_grouped.get(canonical_base, [])
-            if not gt_files_to_compare:
-                continue
-            with open(result_file, 'r', encoding='utf-8') as f:
-                ocr_text = f.read()
-            for gt_file_candidate in gt_files_to_compare:
-                with open(gt_file_candidate, 'r', encoding='utf-8') as fgt:
-                    gt_text = fgt.read()
-                if not gt_text.strip() and not ocr_text.strip():
-                    nld = 0.0
-                    lev_dist = 0
-                else:
-                    lev_dist = Levenshtein.distance(gt_text, ocr_text)
-                    nld = 1 - lev_dist / max(len(gt_text), len(ocr_text))
-                if (best_nld is None) or (nld > best_nld):
-                    best_nld = nld
-                    best_ld = lev_dist
-                    best_result_file = result_file
-                    best_gt_file = gt_file_candidate
-        canonical_gt_name = canonical_base + '.txt'
-        if best_nld is not None:
-            nld_list.append(best_nld)
-            ld_list.append(best_ld)
-            table_rows.append((best_result_file.name, canonical_gt_name, best_ld, best_nld))
-        else:
-            # No result for this service/canonical ground truth, add a row with blanks
-            table_rows.append(("-", canonical_gt_name, '-', '-'))
+    # Use summary_gt_files and ld_table if provided to fill the per-service table
+    ld_table = None
+    if hasattr(get_average_normalized_levenshtein, 'ld_table'):
+        ld_table = getattr(get_average_normalized_levenshtein, 'ld_table')
+    if summary_gt_files is not None and ld_table is not None:
+        # Use the summary's NLD, LD, and result file values for this service
+        for canonical_base in canonical_gt_names:
+            canonical_gt_name = canonical_base + '.txt'
+            nld_tuple = ld_table.get(canonical_gt_name, {}).get(service, ('', '', ''))
+            nld_val, ld_val, result_file_name = nld_tuple
+            if nld_val == '':
+                table_rows.append(("-", canonical_gt_name, '-', '-'))
+            else:
+                table_rows.append((result_file_name, canonical_gt_name, ld_val, nld_val))
+                nld_list.append(nld_val)
+                ld_list.append(ld_val)
+    else:
+        for canonical_base in canonical_gt_names:
+            # All result files for this canonical (splits)
+            split_result_files = result_files_by_canonical.get(canonical_base, [])
+            best_nld = None
+            best_ld = None
+            best_result_file = None
+            best_gt_file = None
+            # For each split result file, compare to all ground truths for this canonical
+            for result_file in split_result_files:
+                gt_files_to_compare = gt_grouped.get(canonical_base, [])
+                if not gt_files_to_compare:
+                    continue
+                with open(result_file, 'r', encoding='utf-8') as f:
+                    ocr_text = f.read()
+                for gt_file_candidate in gt_files_to_compare:
+                    with open(gt_file_candidate, 'r', encoding='utf-8') as fgt:
+                        gt_text = fgt.read()
+                    if not gt_text.strip() and not ocr_text.strip():
+                        nld = 0.0
+                        lev_dist = 0
+                    else:
+                        lev_dist = Levenshtein.distance(gt_text, ocr_text)
+                        nld = 1 - lev_dist / max(len(gt_text), len(ocr_text))
+                    if (best_nld is None) or (nld > best_nld):
+                        best_nld = nld
+                        best_ld = lev_dist
+                        best_result_file = result_file
+                        best_gt_file = gt_file_candidate
+            canonical_gt_name = canonical_base + '.txt'
+            if best_nld is not None:
+                nld_list.append(best_nld)
+                ld_list.append(best_ld)
+                table_rows.append((best_result_file.name, canonical_gt_name, best_ld, best_nld))
+            else:
+                # No result for this service/canonical ground truth, add a row with blanks
+                table_rows.append(("-", canonical_gt_name, '-', '-'))
 
     # Sort table_rows by ground truth file name (exam_1.txt, exam_2.txt, ...)
     def gt_sort_key(row):
@@ -152,12 +178,14 @@ def get_average_normalized_levenshtein(service_name: str, output_lines, summary_
         return [int(p) if p.isdigit() else p.lower() for p in parts]
     table_rows = sorted(table_rows, key=gt_sort_key)
 
-    if nld_list:
-        avg_nld = sum(nld_list) / len(nld_list)
+    nld_vals = [v for v in nld_list if isinstance(v, (int, float))]
+    ld_vals = [v for v in ld_list if isinstance(v, (int, float))]
+    if nld_vals:
+        avg_nld = sum(nld_vals) / len(nld_vals)
     else:
         avg_nld = 0.0
-    if ld_list:
-        avg_ld = sum(ld_list) / len(ld_list)
+    if ld_vals:
+        avg_ld = sum(ld_vals) / len(ld_vals)
     else:
         avg_ld = 0.0
     # Markdown table output only
@@ -190,16 +218,17 @@ if __name__ == "__main__":
     summary_gt_files = []
     for gt_file in ld_table:
         # Exclude if all services have missing NLD
-        if all(ld_table[gt_file][service] == '' for service in services):
+        if all((ld_table[gt_file][service][0] if isinstance(ld_table[gt_file][service], tuple) else ld_table[gt_file][service]) == '' for service in services):
             continue
         summary_gt_files.append(gt_file)
         row = [gt_file]
         for service in services:
             val = ld_table[gt_file][service]
-            if val == '':
+            nld_val = val[0] if isinstance(val, tuple) else val
+            if nld_val == '':
                 row.append("-")
             else:
-                row.append(f"{val:.3f}")
+                row.append(f"{nld_val:.3f}")
         output_lines.append(f"| {' | '.join(row)} |\n")
     avg_row_fmt = [f"{avg_row[service]:.3f}" if avg_row[service] != 0 else "-" for service in services]
     output_lines.append(f"| **Average** | {' | '.join(avg_row_fmt)} |\n\n")
@@ -241,9 +270,14 @@ if __name__ == "__main__":
             if only_in_service:
                 print(f"Ground truth files in {service} but not in summary: {sorted(only_in_service)}")
 
-    # Results for each service
+    # Pass ld_table to get_average_normalized_levenshtein for summary-aligned per-service tables
+    def get_avg_norm_lev_with_ld_table(service, output_lines, summary_gt_files, ld_table):
+        get_average_normalized_levenshtein.ld_table = ld_table
+        get_average_normalized_levenshtein(service, output_lines, summary_gt_files)
+        del get_average_normalized_levenshtein.ld_table
+
     for service in OcrService:
-        get_average_normalized_levenshtein(service, output_lines, summary_gt_set)
+        get_avg_norm_lev_with_ld_table(service, output_lines, summary_gt_set, ld_table)
     results_path = Path(__file__).resolve().parent.parent / 'results' / 'results.md'
     with open(results_path, 'w', encoding='utf-8') as f:
         f.writelines(output_lines)

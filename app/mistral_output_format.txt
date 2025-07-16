@@ -1,3 +1,0 @@
-{'pages': [{'index': 0, 'markdown': 'public static boolean contains (int [] a, int element ) { for (int i = 0; i < a, length; i++) { if (a[i] == element) { return True; } return False; }', 'images': [], 'dimensions': {'dpi': 200, 'height': 504, 'width': 1200}}], 'model': 'mistral-ocr-2505-completion', 'usage_info': {'pages_processed': 1, 'doc_size_bytes': 642753}, 'document_annotation': None}
-
-{'pages': [{'index': 0, 'markdown': 'public static int add Two (int a, int b) return a-b;', 'images': [], 'dimensions': {'dpi': 200, 'height': 171, 'width': 1200}}], 'model': 'mistral-ocr-2505-completion', 'usage_info': {'pages_processed': 1, 'doc_size_bytes': 228297}, 'document_annotation': None}

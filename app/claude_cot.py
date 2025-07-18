@@ -5,10 +5,10 @@ from pathlib import Path
 from utils import OcrService, get_base64_encoded_image, claude_analyse_read
 
 # Define the OCR service being used and its model
-SERVICE = OcrService.PSEUDO34
+SERVICE = OcrService.PSEUDO32
 # MODEL_NAME = "claude-opus-4-0"
-# MODEL_NAME = "claude-3-5-sonnet-latest"
-MODEL_NAME = "claude-3-7-sonnet-latest"
+MODEL_NAME = "claude-3-5-sonnet-latest"
+# MODEL_NAME = "claude-3-7-sonnet-latest"
 
 system_prompt = "You are a perfect OCR assistant for extracting text from images without producing hallucinations."
 

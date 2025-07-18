@@ -47,56 +47,54 @@ class OcrService(StrEnum):
     # PSEUDO25 = 'claude_cot_6_fh_3_5_sonnet_latest'
     # PSEUDO30 = 'test_claude_no_cot_3_fh_3_7_sonnet' # example 24 + similar examples to exam_6 + exam_12
     # PSEUDO31 = 'claude_cot_x_fh_3_7_sonnet_latest' # for testing
-    # PSEUDO32 = '[batch]_claude_cot_1_fh_3_5_sonnet_latest' # for testing on batch of images
-    # PSEUDO33 = '[batch]_claude_cot_3_fh_3_7_sonnet_latest' # for testing on batch of images
-    # PSEUDO34 = '[batch]_claude_cot_1_fh_3_7_sonnet_latest' # for testing on batch of images
+    PSEUDO32 = '[batch_17_7]_claude_cot_1_fh_3_5_sonnet_latest'
+    # PSEUDO33 = '[batch]_claude_cot_3_fh_3_7_sonnet_latest'
+    # PSEUDO34 = '[batch]_claude_cot_1_fh_3_7_sonnet_latest'
 
     # PSEUDO26 = 'gpt_cot_2_fh_4_1' # example 24 + 33
     # PSEUDO27 = 'gpt_cot_2_fh_4o_mini' # example 24 + 33
-    PSEUDO35 = 'gpt_cot_1_fh_4o_mini'
+    # PSEUDO35 = 'gpt_cot_1_fh_4o_mini'
 
 # Tuple of compressed image names to process for OCR (manually input)
 PROCESSED_OCR_IMAGES = (
-    # 'exam_1_comp.png',
-    # 'exam_2_comp.png',
-    # 'exam_4_comp.png',
-    # 'exam_5_comp.png',
-    # 'exam_6_comp.png',
-    # 'exam_7_comp.png',
-    # 'exam_8_comp.png',
-    'exam_11_comp.png',
-    'exam_12_comp.png',
-    # 'exam_13_comp.png',
-    # 'exam_14_comp.png', # easy
-    # 'exam_15_comp.png', # easy
-    # 'exam_16_comp.png', # easy
-    # 'exam_17_comp.png',
-    # 'exam_18_comp.png',
-    # 'exam_19_comp.png',
-    # 'exam_21_comp.png',
-    # 'exam_23_comp.png',
-    # 'exam_25_comp.png',
-    # 'exam_26_comp.png', # easy
-    # 'exam_27_comp.png',
-    # 'exam_28_comp.png', # easy
-    # 'exam_30_comp.png',
-    # 'exam_32_comp.png',
+    # 'exam_3_comp.png',
+    # 'exam_14_comp.png',
+    # 'exam_16_comp.png',
+    # 'exam_20_comp.png',
     # 'exam_35_comp.png',
-    # 'exam_39_comp.png',
-    # 'exam_40_comp.png',
-    # 'exam_42_comp.png',
-    # 'exam_47_comp.png',
+    # 'exam_37_comp.png',
+    # 'exam_38_comp.png',
+    # 'exam_41_comp.png',
+    # 'exam_43_comp.png',
+    # 'exam_44_comp.png',
+    # 'exam_49_comp.png',
+    'exam_55_comp.png',
     # 'exam_57_comp.png',
+    # 'exam_58_comp.png',
+    # 'exam_59_comp.png',
     # 'exam_62_comp.png',
     # 'exam_63_comp.png',
+    # 'exam_64_comp.png',
+    # 'exam_65_comp.png',
+    # 'exam_66_comp.png',
+    # 'exam_67_comp.png',
     # 'exam_68_comp.png',
     # 'exam_69_comp.png',
-    # 'exam_77_comp.png',
+    # 'exam_70_comp.png',
+    # 'exam_82_comp.png',
+    # 'exam_83_comp.png',
+    # 'exam_84_comp.png',
+    # 'exam_86_comp.png',
+    # 'exam_88_comp.png',
     # 'exam_89_comp.png',
-    # 'exam_93_comp.png',
-    # 'exam_94_comp.png',
+    # 'exam_90_comp.png',
+    # 'exam_91_comp.png',
+    # 'exam_92_comp.png',
     # 'exam_95_comp.png',
     # 'exam_96_comp.png',
+    # 'exam_97_comp.png',
+    # 'exam_98_comp.png',
+    # 'exam_99_comp.png',
     # 'exam_100_comp.png',
 )
 

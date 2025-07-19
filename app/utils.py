@@ -47,9 +47,10 @@ class OcrService(StrEnum):
     # PSEUDO25 = 'claude_cot_6_fh_3_5_sonnet_latest'
     # PSEUDO30 = 'test_claude_no_cot_3_fh_3_7_sonnet' # example 24 + similar examples to exam_6 + exam_12
     # PSEUDO31 = 'claude_cot_x_fh_3_7_sonnet_latest' # for testing
-    PSEUDO32 = '[batch_17_7]_claude_cot_1_fh_3_5_sonnet_latest'
+    # PSEUDO32 = '[batch_17_7]_claude_cot_1_fh_3_5_sonnet_latest'
     # PSEUDO33 = '[batch]_claude_cot_3_fh_3_7_sonnet_latest'
     # PSEUDO34 = '[batch]_claude_cot_1_fh_3_7_sonnet_latest'
+    PSEUDO36 = '[batch]_claude_cot_1_fh_3_5_sonnet_latest'
 
     # PSEUDO26 = 'gpt_cot_2_fh_4_1' # example 24 + 33
     # PSEUDO27 = 'gpt_cot_2_fh_4o_mini' # example 24 + 33

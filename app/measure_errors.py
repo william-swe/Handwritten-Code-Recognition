@@ -5,6 +5,19 @@ import matplotlib.pyplot as plt
 
 MAX_COUNTER = 3
 
+def normalize_text_for_comparison(text):
+    """
+    Normalize text by removing indentation whitespaces and line breaks.
+    This preserves word spacing but removes formatting differences.
+    """
+    # Split into lines and strip leading/trailing whitespace from each line
+    lines = text.split('\n')
+    # Remove leading whitespace (indentation) from each line
+    stripped_lines = [line.strip() for line in lines]
+    # Join lines with single spaces, removing empty lines
+    normalized = ' '.join(line for line in stripped_lines if line)
+    return normalized
+
 def collect_levenshtein_distances():
     # Collect Levenshtein distances for all services and ground truth files
     gt_dir = Path(__file__).resolve().parent.parent / 'ground_truth'
@@ -37,12 +50,17 @@ def collect_levenshtein_distances():
                     continue
                 with open(result_file, 'r', encoding='utf-8') as f:
                     ocr_text = f.read()
-                if not gt_text.strip() and not ocr_text.strip():
+                
+                # Normalize texts for comparison (remove indentation and line breaks)
+                gt_text_normalized = normalize_text_for_comparison(gt_text)
+                ocr_text_normalized = normalize_text_for_comparison(ocr_text)
+                
+                if not gt_text_normalized and not ocr_text_normalized:
                     nld = 1.0
                     lev_dist = 0
                 else:
-                    lev_dist = Levenshtein.distance(gt_text, ocr_text)
-                    nld = 1 - lev_dist / max(len(gt_text), len(ocr_text))
+                    lev_dist = Levenshtein.distance(gt_text_normalized, ocr_text_normalized)
+                    nld = 1 - lev_dist / max(len(gt_text_normalized), len(ocr_text_normalized))
                 if best_nld == '' or (isinstance(nld, float) and nld > best_nld):
                     best_nld = nld
                     best_ld = lev_dist
@@ -151,12 +169,17 @@ def get_average_normalized_levenshtein(service_name: str, output_lines, summary_
                 for gt_file_candidate in gt_files_to_compare:
                     with open(gt_file_candidate, 'r', encoding='utf-8') as fgt:
                         gt_text = fgt.read()
-                    if not gt_text.strip() and not ocr_text.strip():
+                    
+                    # Normalize texts for comparison (remove indentation and line breaks)
+                    gt_text_normalized = normalize_text_for_comparison(gt_text)
+                    ocr_text_normalized = normalize_text_for_comparison(ocr_text)
+                    
+                    if not gt_text_normalized and not ocr_text_normalized:
                         nld = 0.0
                         lev_dist = 0
                     else:
-                        lev_dist = Levenshtein.distance(gt_text, ocr_text)
-                        nld = 1 - lev_dist / max(len(gt_text), len(ocr_text))
+                        lev_dist = Levenshtein.distance(gt_text_normalized, ocr_text_normalized)
+                        nld = 1 - lev_dist / max(len(gt_text_normalized), len(ocr_text_normalized))
                     if (best_nld is None) or (nld > best_nld):
                         best_nld = nld
                         best_ld = lev_dist

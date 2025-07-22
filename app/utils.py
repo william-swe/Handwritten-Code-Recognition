@@ -25,7 +25,9 @@ class OcrService(StrEnum):
 
     # PSEUDO14 = 'combined_azure_gpt'
     # PSEUDO15 = 'combined_mistral_gpt'
-    # PSEUDO5 = 'combined_mistral_claude'
+    # PSEUDO5 = '[test1]_combined_mistral_claude'
+    # PSEUDO44 = '[test2]_combined_mistral_claude'
+    # PSEUDO45 = '[test3]_combined_mistral_claude'
     # PSEUDO16 = 'combined_azure_claude'
     # PSEUDO17 = 'claude_mistral_gpt'
 
@@ -47,56 +49,64 @@ class OcrService(StrEnum):
     # PSEUDO25 = 'claude_cot_6_fh_3_5_sonnet_latest'
     # PSEUDO30 = 'test_claude_no_cot_3_fh_3_7_sonnet' # example 24 + similar examples to exam_6 + exam_12
     # PSEUDO31 = 'claude_cot_x_fh_3_7_sonnet_latest' # for testing
-    # PSEUDO32 = '[batch_17_7]_claude_cot_1_fh_3_5_sonnet_latest'
+    # PSEUDO32 = '[batch_17_7]_claude_cot_1_fh_3_5_sonnet_latest' # 39 clean snapshots
     # PSEUDO33 = '[batch]_claude_cot_3_fh_3_7_sonnet_latest'
     # PSEUDO34 = '[batch]_claude_cot_1_fh_3_7_sonnet_latest'
-    PSEUDO36 = '[batch]_claude_cot_1_fh_3_5_sonnet_latest'
+    # PSEUDO36 = '[batch]_claude_cot_1_fh_3_5_sonnet_latest' # 39 mixed snapshots
+    # PSEUDO37 = '[insertion_only]_claude_cot_1_fh_3_5_sonnet_latest'
 
     # PSEUDO26 = 'gpt_cot_2_fh_4_1' # example 24 + 33
     # PSEUDO27 = 'gpt_cot_2_fh_4o_mini' # example 24 + 33
     # PSEUDO35 = 'gpt_cot_1_fh_4o_mini'
+    # PSEUDO46 = '[insertion_only_claude]_simple_prompt_sonnet_3_5_latest'
+
+    # NEW EXPERIMENTS WITH 10 NEW IMAGES FOR SYNTAX AND INSERTION
+
+    # PSEUDO38 = '[syntax_insertion_claude]_simple_prompt_opus_4'
+    # PSEUDO41 = '[syntax_insertion_claude]_zsp_opus_4'
+    # PSEUDO42 = '[syntax_insertion_claude]_zsp_sonnet_3_5_latest'
+    # PSEUDO44 = '[syntax_insertion_claude]_cot_fsp_sonnet_3_5_latest'
+    # PSEUDO45 = '[ex][syntax_insertion_claude]_cot_fsp_24_120_sonnet_3_5_latest'
+    # PSEUDO43 = '[syntax_insertion_gpt]_zsp_4o_mini'
+    
+    # PSEUDO40 = '[syntax_insertion_gpt]_simple_prompt_4o_mini'
+    # PSEUDO39 = '[syntax_insertion_claude]_simple_prompt_sonnet_3_5_latest'
+    # PSEUDO43 = '[syntax_insertion_claude]_cot_zsp_sonnet_3_5_latest'
+    PSEUDO47 = '[ex][syntax_insertion_claude]_cot_fsp_120_sonnet_3_5_latest'
 
 # Tuple of compressed image names to process for OCR (manually input)
 PROCESSED_OCR_IMAGES = (
-    # 'exam_3_comp.png',
-    # 'exam_14_comp.png',
-    # 'exam_16_comp.png',
-    # 'exam_20_comp.png',
-    # 'exam_35_comp.png',
-    # 'exam_37_comp.png',
-    # 'exam_38_comp.png',
-    # 'exam_41_comp.png',
-    # 'exam_43_comp.png',
-    # 'exam_44_comp.png',
-    # 'exam_49_comp.png',
-    'exam_55_comp.png',
-    # 'exam_57_comp.png',
-    # 'exam_58_comp.png',
-    # 'exam_59_comp.png',
-    # 'exam_62_comp.png',
-    # 'exam_63_comp.png',
-    # 'exam_64_comp.png',
-    # 'exam_65_comp.png',
-    # 'exam_66_comp.png',
-    # 'exam_67_comp.png',
-    # 'exam_68_comp.png',
-    # 'exam_69_comp.png',
-    # 'exam_70_comp.png',
-    # 'exam_82_comp.png',
-    # 'exam_83_comp.png',
-    # 'exam_84_comp.png',
-    # 'exam_86_comp.png',
-    # 'exam_88_comp.png',
-    # 'exam_89_comp.png',
-    # 'exam_90_comp.png',
-    # 'exam_91_comp.png',
-    # 'exam_92_comp.png',
-    # 'exam_95_comp.png',
-    # 'exam_96_comp.png',
-    # 'exam_97_comp.png',
-    # 'exam_98_comp.png',
-    # 'exam_99_comp.png',
-    # 'exam_100_comp.png',
+    'exam_104_comp.png',
+    'exam_105_comp.png',
+    'exam_106_comp.png',
+    'exam_108_comp.png',
+    'exam_113_comp.png',
+    'exam_114_comp.png',
+    'exam_116_comp.png',
+    'exam_118_comp.png',
+    'exam_128_comp.png',
+    'exam_132_comp.png',
+    'exam_102_comp.png',
+    'exam_103_comp.png',
+    'exam_107_comp.png',
+    'exam_109_comp.png',
+    'exam_110_comp.png',
+    'exam_111_comp.png',
+    'exam_112_comp.png',
+    'exam_115_comp.png',
+    'exam_117_comp.png',
+    'exam_119_comp.png',
+    'exam_120_comp.png',
+    'exam_121_comp.png',
+    'exam_122_comp.png',
+    'exam_123_comp.png',
+    'exam_124_comp.png',
+    'exam_125_comp.png',
+    'exam_126_comp.png',
+    'exam_127_comp.png',
+    'exam_129_comp.png',
+    'exam_130_comp.png',
+    'exam_131_comp.png',
 )
 
 CLAUDE_SERVICE_PRICES = {
@@ -240,15 +250,14 @@ def extract_answer_from_tag(text: str) -> str:
         return match.group(1).strip()
     return text.strip()
 
-def claude_analyse_read(service_name: OcrService, model: str, max_tokens: int, temperature: int, message_list: list[dict], system_prompt: str):
+def claude_analyse_read(service_name: OcrService, model: str, max_tokens: int, temperature: int, message_list: list[dict], system_prompt: str, idx_to_insert_image: int):
     # Check if the service_name is a valid OcrService enum
     if not isinstance(service_name, OcrService):
         raise ValueError(f"Invalid OCR service name: {service_name}. Must be an instance of OcrService enum.")
 
     # Check if the system prompt is provided
     if not system_prompt:
-        print("System prompt is not provided. Using default system prompt for Claude AI service.")
-        system_prompt = "You are a perfect OCR assistant for extracting text from images without producing hallucinations."
+        print("System prompt is not provided.")
 
     # Load environment variables
     load_env_file()
@@ -288,7 +297,7 @@ def claude_analyse_read(service_name: OcrService, model: str, max_tokens: int, t
             continue
 
         # Insert the image to the prompt
-        message_list[-2]["content"][0]["source"]["data"] = get_base64_encoded_image(image_path)
+        message_list[idx_to_insert_image]["content"][0]["source"]["data"] = get_base64_encoded_image(image_path)
 
         print(f"\nAnalysing {Path(image_path).name} by {model}...")
 
@@ -361,7 +370,7 @@ def claude_analyse_read(service_name: OcrService, model: str, max_tokens: int, t
 
     print('\n---------- Claude service analysis finished ----------')
 
-def gpt_analyse_read(service_name: OcrService, model: str, max_tokens: int, temperature: int, messages: list[dict]):
+def gpt_analyse_read(service_name: OcrService, model: str, max_tokens: int, temperature: int, messages: list[dict], idx_to_insert_image: int):
     # Check if the service_name is a valid OcrService enum
     if not isinstance(service_name, OcrService):
         raise ValueError(f"Invalid OCR service name: {service_name}. Must be an instance of OcrService enum.")
@@ -404,7 +413,7 @@ def gpt_analyse_read(service_name: OcrService, model: str, max_tokens: int, temp
             continue
 
         # Insert the image to the prompt
-        messages[-2]["content"][0]["image_url"]["url"] = f"data:image/png;base64,{get_base64_encoded_image(image_path)}"
+        messages[idx_to_insert_image]["content"][0]["image_url"]["url"] = f"data:image/png;base64,{get_base64_encoded_image(image_path)}"
 
         print(f"\nAnalysing {Path(image_path).name} by {model}...")
 

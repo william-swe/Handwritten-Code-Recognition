@@ -7,13 +7,13 @@ MAX_COUNTER = 3
 
 def normalize_text_for_comparison(text):
     """
-    Normalize text by removing indentation whitespaces and line breaks.
+    Normalize text by removing indentation whitespaces, line breaks, and redundant spaces.
     This preserves word spacing but removes formatting differences.
     """
     # Split into lines and strip leading/trailing whitespace from each line
     lines = text.split('\n')
-    # Remove leading whitespace (indentation) from each line
-    stripped_lines = [line.strip() for line in lines]
+    # Remove leading whitespace (indentation) from each line and normalize spaces within each line
+    stripped_lines = [re.sub(r'\s+', ' ', line.strip()) for line in lines]
     # Join lines with single spaces, removing empty lines
     normalized = ' '.join(line for line in stripped_lines if line)
     return normalized

@@ -9,7 +9,7 @@ from utils import OcrService, PROCESSED_OCR_IMAGES, define_directories, load_env
 from anthropic import Anthropic
 
 # Define the OCR service being used
-SERVICE = OcrService.PSEUDO5
+SERVICE = OcrService.PSEUDO45
 
 # Load environment variables
 load_env_file()
@@ -28,9 +28,8 @@ if not api_key:
 # Create a Claude client
 print("Connecting to Claude AI service...\n")
 client = Anthropic(api_key=api_key)
-MODEL_NAME = "claude-opus-4-0"
-# "claude-opus-4-0"
-# "claude-3-5-sonnet-latest"
+MODEL_NAME = "claude-3-5-sonnet-latest"
+# MODEL_NAME = "claude-opus-4-0"
 
 def get_base64_encoded_image(image_path):
     with open(image_path, "rb") as image_file:
@@ -84,8 +83,17 @@ def analyse_read():
         </mistral_output>
         """
 
+        # prompt = f"""
+        # <instructions>
+        #     Transcribe the text in this image exactly. Output a line of text per line of text in the document. To assist you in the transcription, below is Mistral's attempt at extracting text from this image. Note, Mistral can be incorrect, but you can use it to help in your transcription. Also, if you see an insertion sign, including (but not limited to) a caret ("^" or "v") or an arrow, insert the text at the indicated position.
+        #     <mistral_output>
+        #         {mistral_output}
+        #     </mistral_output>
+        # </instructions>
+        # """
+
         system_prompt = """
-        You are a perfect OCR assistant designed to transcribe text.
+        "You are a perfect OCR assistant for extracting text from images without producing hallucinations."
         """
 
         message_list = [
@@ -100,7 +108,7 @@ def analyse_read():
             model=MODEL_NAME,
             system=system_prompt,
             messages=message_list,
-            max_tokens=500,
+            max_tokens=1024,
             temperature=0.0,
         )
 

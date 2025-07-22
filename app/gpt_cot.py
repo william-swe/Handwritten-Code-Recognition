@@ -5,29 +5,32 @@ from pathlib import Path
 from utils import OcrService, get_base64_encoded_image, gpt_analyse_read
 
 # Define the OCR service being used and its model
-SERVICE = OcrService.PSEUDO35
+SERVICE = OcrService.PSEUDO40
 MODEL_NAME = "gpt-4o-mini"
 
-system_prompt = "You are a perfect OCR assistant for extracting text from images without producing hallucinations."
+# system_prompt = "You are a perfect OCR assistant for extracting text from images without producing hallucinations."
+system_prompt = ""
 
-prompt = """
-<instructions>
-    Here is a list of steps that you should follow to extract text from images:
-    <steps>
-        1. If you encounter a strikethrough or crossed-out word, you will ignore it.
-        2. If you see an insertion sign, including (but not limited to) a caret ("^" or "v") or an arrow, you will insert the text at the indicated position.
-        3. If you see a typo, a Java spelling/syntax mistake or a Java logical error, you never correct it, you will read the text as it is.
-        4. Place the transcribed text inside this XML tag: <answer>your text here</answer>.
-    </steps>
-</instructions>
-<question>
-    Follow the above steps and extract text from this image.
-</question>
-"""
+# complex_prompt = """
+# <instructions>
+#     Here is a list of steps that you should follow to extract text from images:
+#     <steps>
+#         1. If you encounter a strikethrough or crossed-out word, you will ignore it.
+#         2. If you see an insertion sign, including (but not limited to) a caret ("^" or "v") or an arrow, you will insert the text at the indicated position.
+#         3. If you see a typo, a Java spelling/syntax mistake or a Java logical error, you never correct it, you will read the text as it is.
+#         4. Place the transcribed text inside this XML tag: <answer>your text here</answer>.
+#     </steps>
+# </instructions>
+# <question>
+#     Follow the above steps and extract text from this image.
+# </question>
+# """
+
+simple_prompt = "Please extract the text from the image below, never correcting typos or syntax mistakes. If you see an insertion sign, including (but not limited to) a caret ('^' or 'v') or an arrow, insert the text at the indicated position. Place the transcribed text inside this XML tag: <answer>your text here</answer>."
 
 # List of example numbers
 examples = tuple([
-    24, # exam_24
+    # 24, # exam_24
     # 33, # exam_33
     # 48, # exam_48
     # 58, # exam_58
@@ -79,15 +82,15 @@ messages.append({
     "role": "user",
     "content": [
         {"type": "image_url", "image_url": {"url": "", "detail": "high"}},  # Placeholder for actual image data
-        {"type": "text", "text": prompt}
+        {"type": "text", "text": simple_prompt}
     ]
 })
-messages.append({
-    "role": "assistant",
-    "content": "Let's think step by step."
-})
+# messages.append({
+#     "role": "assistant",
+#     "content": "Let's think step by step."
+# })
 
 # with open('explaination.txt', 'w', encoding='utf-8') as f:
 #     f.write(f"{example_data[5]['explanation']}\n")
 
-gpt_analyse_read(SERVICE, MODEL_NAME, 1024, 0.0, messages)
+gpt_analyse_read(SERVICE, MODEL_NAME, 1024, 0.0, messages, -1)

@@ -10,9 +10,6 @@ from openai import OpenAI
 # This allows for easy reference to different OCR services used in the application.
 # All used services are listed here, and they can be extended in the future if needed.
 class OcrService(StrEnum):
-    # AZURE = 'azure'
-    # MISTRAL = 'mistral'
-
     # OPENAI = 'gpt'
     # PSEUDO6 = 'gpt_no_prompt_eng'
     # PSEUDO7 = 'gpt_prompt_eng_no_examples'
@@ -68,14 +65,19 @@ class OcrService(StrEnum):
     # PSEUDO44 = '[syntax_insertion_claude]_cot_fsp_sonnet_3_5_latest'
     # PSEUDO45 = '[ex][syntax_insertion_claude]_cot_fsp_24_120_sonnet_3_5_latest'
     # PSEUDO43 = '[syntax_insertion_gpt]_zsp_4o_mini'
+    # PSEUDO47 = '[ex][syntax_insertion_claude]_cot_fsp_120_sonnet_3_5_latest'
     
-    # PSEUDO40 = '[syntax_insertion_gpt]_simple_prompt_4o_mini'
-    # PSEUDO39 = '[syntax_insertion_claude]_simple_prompt_sonnet_3_5_latest'
-    # PSEUDO43 = '[syntax_insertion_claude]_cot_zsp_sonnet_3_5_latest'
-    PSEUDO47 = '[ex][syntax_insertion_claude]_cot_fsp_120_sonnet_3_5_latest'
+    AZURE = 'azure'
+    MISTRAL = 'mistral'
+    PSEUDO40 = '[syntax_insertion_gpt]_simple_prompt_4o_mini'
+    PSEUDO49 = '[syntax_insertion_gpt]_simple_prompt_4_1'
+    PSEUDO39 = '[syntax_insertion_claude]_simple_prompt_sonnet_3_5_latest'
+    PSEUDO43 = '[syntax_insertion_claude]_cot_zsp_sonnet_3_5_latest'
+    PSEUDO48 = '[ex][syntax_insertion_claude]_cot_fsp_109_120_125_sonnet_3_5_latest'
 
 # Tuple of compressed image names to process for OCR (manually input)
 PROCESSED_OCR_IMAGES = (
+    'exam_103_comp.png',
     'exam_104_comp.png',
     'exam_105_comp.png',
     'exam_106_comp.png',
@@ -85,28 +87,53 @@ PROCESSED_OCR_IMAGES = (
     'exam_116_comp.png',
     'exam_118_comp.png',
     'exam_128_comp.png',
-    'exam_132_comp.png',
-    'exam_102_comp.png',
-    'exam_103_comp.png',
-    'exam_107_comp.png',
-    'exam_109_comp.png',
-    'exam_110_comp.png',
-    'exam_111_comp.png',
-    'exam_112_comp.png',
-    'exam_115_comp.png',
-    'exam_117_comp.png',
-    'exam_119_comp.png',
-    'exam_120_comp.png',
-    'exam_121_comp.png',
-    'exam_122_comp.png',
-    'exam_123_comp.png',
-    'exam_124_comp.png',
-    'exam_125_comp.png',
-    'exam_126_comp.png',
-    'exam_127_comp.png',
-    'exam_129_comp.png',
-    'exam_130_comp.png',
-    'exam_131_comp.png',
+    
+    # 'exam_109_comp.png',
+    # 'exam_120_comp.png',
+    # 'exam_125_comp.png',
+
+    # 'exam_43_comp.png',
+    # 'exam_65_comp.png',
+    # 'exam_89_comp.png',
+    # 'exam_102_comp.png',
+    # 'exam_107_comp.png',
+    # 'exam_110_comp.png',
+    # 'exam_111_comp.png',
+    # 'exam_112_comp.png',
+    # 'exam_115_comp.png',
+    # 'exam_117_comp.png',
+    # 'exam_119_comp.png',
+    # 'exam_121_comp.png',
+    # 'exam_122_comp.png',
+    # 'exam_123_comp.png',
+    # 'exam_124_comp.png',
+    # 'exam_126_comp.png',
+    # 'exam_127_comp.png',
+    # 'exam_129_comp.png',
+    # 'exam_130_comp.png',
+    # 'exam_131_comp.png',
+    # 'exam_132_comp.png',
+    # 'exam_133_comp.png',
+    # 'exam_134_comp.png',
+    # 'exam_135_comp.png',
+    # 'exam_136_comp.png',
+    # 'exam_137_comp.png',
+    # 'exam_138_comp.png',
+    # 'exam_139_comp.png',
+    # 'exam_140_comp.png',
+    # 'exam_141_comp.png',
+    # 'exam_142_comp.png',
+    # 'exam_143_comp.png',
+    # 'exam_144_comp.png',
+    # 'exam_145_comp.png',
+    # 'exam_146_comp.png',
+    # 'exam_147_comp.png',
+    # 'exam_148_comp.png',
+    # 'exam_149_comp.png',
+    # 'exam_150_comp.png',
+    # 'exam_151_comp.png',
+    # 'exam_152_comp.png',
+    # 'exam_153_comp.png',
 )
 
 CLAUDE_SERVICE_PRICES = {

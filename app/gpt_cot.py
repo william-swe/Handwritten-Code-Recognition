@@ -5,8 +5,9 @@ from pathlib import Path
 from utils import OcrService, get_base64_encoded_image, gpt_analyse_read
 
 # Define the OCR service being used and its model
-SERVICE = OcrService.PSEUDO40
-MODEL_NAME = "gpt-4o-mini"
+SERVICE = OcrService.PSEUDO49
+# MODEL_NAME = "gpt-4o-mini"
+MODEL_NAME = "gpt-4.1"
 
 # system_prompt = "You are a perfect OCR assistant for extracting text from images without producing hallucinations."
 system_prompt = ""

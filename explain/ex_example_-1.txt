@@ -1,0 +1,38 @@
+On line 1, I see "public class SimilarExam6 {", so I transcribe it as is.
+On line 2, I see "public double test1() {", so I transcribe it as is.
+On line 3, I see "double result = 0.", so I transcribe it as is. I see a syntax error ("." should be replaced by a semicolon), I ignore it because the instruction says never correct syntax errors.
+On line 4, I see "for(int i=0; i<1; i++) {", so I transcribe it as is.
+On line 5, I see "system.out.println(i);" so I transcribe it as is. I see a typo ("system" should be "System"), but I ignore it because the instruction says never correct typos.
+On line 6, I see "}", so I transcribe it as is.
+On line 7, I see "return result;", so I transcribe it as is.
+On line 8, I see "}", so I transcribe it as is.
+On line 9, I see that there is no text, so I add a new line.
+On line 10, I see "public class SimilarExam12 {", so I transcribe it as is.
+On line 11, I see "public void test2() {", so I transcribe it as is.
+On line 12, I see "for(int j=0; j<10; j++) {", so I transcribe it as is.
+On line 13, I see "j += 1;", so I transcribe it as is.
+On line 14, I see "return j; }", so I transcribe it as is. I see that there are two syntax errors (missing a closing bracket for the "for" loop and missing a closing bracket for the "SimilarExam12" class), I ignore it because the instruction says never correct syntax errors.
+On line 15, I see that there is no text, so I add a new line.
+On line 16, I see "public static void main(String[] args) {", so I transcribe it as is.
+On line 17, I see "List<Double> numbers = new ArrayList<>();", so I transcribe it as is. I see that there is a syntax error (missing a closing bracket for the "main" function), I ignore it because the instructions says never correct syntax errors.
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+public class SimilarExam6 {
+    public double test1() {
+        double result = 0.
+        for(int i=0; i<1; i++) {
+            system.out.println(i);
+        }
+        return result;
+    }
+
+public class SimilarExam12 {
+    public void test2() {
+        for(int j=0; j<10; j++) {
+            j += 1;
+        return j; }
+
+    public static void main(String[] args) {
+        List<Double> numbers = new ArrayList<>();
+</answer>

@@ -1,0 +1,35 @@
+On line 1, I see "import java.util.List;", so I transcribe it as is. I see a strikethough text right before the line, so I ignore it.
+On line 2, I see "import java.util.ArrayList;", so I transcribe it as is.
+On line 3, I see "import java.util.*;", so I transcribe it as is.
+On line 4, I see that there is no code, so I add a blank line.
+On line 5, I see "public class SumArrayList {" so I transcribe it as is.
+On line 6, I see "public <? extends Number> double sumArrayList(List<T> AL) {", so I transcribe it as is.
+On line 7, I see "double result = 0;", so I transcribe it as is.
+On line 8, I see "List<iterator> Iterator = AL.iterator().", so I transcribe it as is. Even though there is a syntax error ("." should be replaced by a semicolon), I ignore it because the instruction says never correct syntax errors.
+On line 9, I see a strikethough line, so I ignore it.
+On line 10, I see a strikethough line, so I ignore it.
+On line 11, I see "while(Iterator.hasNext()) {", so I transcribe it as is.
+On line 12, I see "result += Iterator.doubleVanle();", so I transcribe it as is. Even though there is a typo ("doubleVanle" should be "doubleValue"), I ignore it because the instruction says never correct typos.
+On line 13, I see "Iterator.remove()", so I transcribe it as is.
+On line 14, I see "}", so I transcribe it as is.
+On line 15, I see "return result;", so I transcribe it as is.
+On line 16, I see "}", so I transcribe it as is. I see that there is a syntax error as there should be a closing bracket for the class, but I ignore it because the instruction says never correct syntax errors.
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+import java.util.List;
+import java.util.ArrayList;
+import java.util.*;
+
+public class SumArrayList {
+    public <? extends Number> double sumArrayList(List<T> AL) {
+    double result = 0;
+    List<iterator> Iterator = AL.iterator(),
+
+    while(Iterator.hasNext()) {
+        result += Iterator.doubleVaule();
+        Iterator.remove();
+    }
+    return result;
+}
+</answer>

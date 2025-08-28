@@ -1,0 +1,30 @@
+On line 1, I see a strikethough line, so I ignore it.
+On line 2, I see a strikethough line, so I ignore it.
+On line 3, I see a strikethough line, so I ignore it.
+On line 4, I see a strikethough line, so I ignore it.
+On line 5, I see a strikethough line, so I ignore it.
+On line 6, I see a strikethough line, so I ignore it.
+On line 7, I see a strikethough line, so I ignore it.
+On line 8, I see "import Java.util.*; import Java.util.ArrayList;", so I transcribe it as is. Even though there is a syntax error ("Java" should be replaced by "java"), I ignore it because the instruction says never correct syntax errors.
+On line 9, I see "public class SumArrayList {", so I transcribe it as is.
+On line 10, I see "public Number sumArrayList(List <? extends Number> list) {", so I transcribe it as is.
+On line 11, I see "Double i = 0;", so I transcribe it as is. I see some strikethough text right before "i = 0;" and the word "Double" right above the strikethough text, so I replace the strikethough text by "Double".
+On line 12, I see "for(Number num: list) {", so I transcribe it as is.
+On line 13, I see "i += num.doubleValue();", so I transcribe it as is. I see a strikethough text right before "i += num.doubleValue();", so I ignore it.
+On line 14, I see "return i; }", so I transcribe it as is.
+On line 15, I see "public static void main(String[] args) {", so I transcribe it as is.
+On line 16, I see "List<Integer> numbers = new ArrayList<>();", so I transcribe it as is. I see a strikethough text between "<" and ">" and the word "Integer" right above it, so I replace the strikethough text with "Integer". I see that there is a syntax error as there should be a closing bracket for the class, but I ignore it because the instruction says never correct syntax errors.
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+import Java.util.*; import Java.util.ArrayList;
+public class SumArrayList {
+    public Number sumArrayList(List <? extends Number> list) {
+        Double i = 0;
+        for (Number num: list) {
+            i += num.doubleValue();
+        return i; }
+
+    public static void main(String[] args) {
+        List<Integer> numbers = new ArrayList<>();
+</answer>

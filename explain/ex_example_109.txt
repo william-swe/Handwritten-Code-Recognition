@@ -1,0 +1,16 @@
+On line 1, I see "AllocatedSpace {", so I transcribe it as is.
+On line 2, I see "private double annualSalary;", so I transcribe it as is.
+On line 3, I see "private int roomNumber;", so I transcribe it as is.
+On line 4, I see "public ContinuingStaff(double annualSalary, int roomNumber) {". I see an arrow pointing to a position before "double annualSalary", and a text "String name," at the end of the arrow, so I insert the text before "double annualSalary". Hence, the final text on this line would be: "public ContinuingStaff(String name, double annualSalary, int roomNumber) {".
+On line 5, I see "this.annualSalary = annualSalary;" so I transcribe it as is. Also, I see an arrow pointing to a position above this line, with a text "super(name),", so I insert the text "super(name)" on line 5, and move the text "this.annualSalary = annualSalary;" to line 6.
+I reach the end of the image. I see that there is a syntax error as there should be a closing bracket for the constructor, but I ignore it because the instruction says never correct syntax mistakes.
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+AllocatedSpace {
+    private double annualSalary;
+    private int roomNumber;
+    public ContinuingStaff(String name, double annualSalary, int roomNumber) {
+        super(name),
+        this.annualSalary = annualSalary;
+</answer>

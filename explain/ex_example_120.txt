@@ -1,0 +1,27 @@
+On line 1, I see "import java.util.ArrayList;", so I transcribe it as is.
+On line 2, I see "public class SumArrayList {", so I transcribe it as is.
+On line 3, I see "public sumArrayList(ArrayList<? extends Number>) {". I see two carets on this line:
+ - One is a downward caret between "public" and "sumArrayList". There is a text "static Double" right above the caret, so I insert "static Double" between "public" and "sumArrayList".
+ - Another is an upward caret below "Number>". There is a text "numsArr" right below the caret, so I insert "numsArr" right after "Number>".
+Hence, the final text on this line would be: "public static Double sumArrayList(ArrayList<? extends Number> numsArr) {".
+On line 4, I see "T sum = 0;" so I transcribe it as is.
+On line 5, I see "for(T num=numsArr) {", so I transcribe it as is.
+On line 6, I see "sum += num.doubleValue();", so I transcribe it as is.
+On line 7, I see "}", so I transcribe it as is.
+On line 8, I see "return sum;", so I transcribe it as is.
+On line 9, I see "}", so I transcribe it as is.
+I reach the end of the image. I see that there is a syntax error as there should be a closing bracket for the class, but I ignore it because the instruction says never correct syntax mistakes.
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+import java.util.ArrayList;
+
+public class SumArrayList {
+    public static Double sumArrayList(ArrayList<? extends Number> numsArr) {
+        T sum = 0;
+        for(T num=numsArr) {
+            sum += num.doubleValue();
+        }
+        return sum;
+    }
+</answer>

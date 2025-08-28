@@ -1,0 +1,26 @@
+On line 1, I see "public static void main(string[] args) {", so I transcribe it as is. Even though there is a syntax error (the type should be "String" instead of "string"), I ignore it because the instruction says never correct syntax errors.
+On line 2, I see "ArrayList <Number> numbers = new ArrayList<>();", so I transcribe it as is.
+On line 3, I see "numbers.add(1);", so I transcribe it as is.
+On line 4, I see "numbers.add(2);", so I transcribe it as is.
+On line 5, I see "numbers.add(3);", so I transcribe it as is.
+On line 6, I see "numbers.add(4);", so I transcribe it as is.
+On line 7, I see "numbers.add(5);", so I transcribe it as is.
+On line 8, I see "double result = sumArrayList(numbers);", so I transcribe it as is.
+On line 9, I see "system.out.println("4.%t", result);", so I transcribe it as is.
+On line 10, I see "}", so I transcribe it as is.
+On line 11, I see a redundant "}", but I include it because the instruction says never correct syntax errors.
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+public static void main(string[] args) {
+    ArrayList <Number> numbers = new ArrayList<>();
+    numbers.add(1);
+    numbers.add(2);
+    numbers.add(3);
+    numbers.add(4);
+    numbers.add(5);
+    double result = sumArrayList(numbers);
+    system.out.println("4.%t", result);
+}
+}
+</answer>

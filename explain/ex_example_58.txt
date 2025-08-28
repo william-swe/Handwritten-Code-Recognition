@@ -1,0 +1,39 @@
+On line 1, I see "public class Continuingstaff extends Employee implements Allotedspace", so I transcribe it as is. I see some typos, such as "Continuingstaff" should be "ContinuingStaff", and "Allotedspace" should be "AllocatedSpace", but I ignore the typos, because the instruction says never correct typos.
+On line 2, I see "{ private double annualSalary;", so I transcribe it as is.
+On line 3, I see "private int rooomNumber;", so I transcribe it as is. Even though "rooomNumber" should be "roomNumber", I ignore the typo because the instruction says never correct typos.
+On line 4, I see "String name;", so I transcribe it as is.
+On line 5, I see "public Continuingstaff(String name, double annualsalary, int roomNumber)", so I transcribe it as is. Even though "annualsalary" should be "annualSalary", I ignore the typo because the instruction says never correct typos.
+On line 6, I see "{ this.name = name;", so I transcribe it as is.
+On line 7, I see "this.annualsalary = annualsalary;", so I transcribe it as is. Even though "annualsalary" should be "annualSalary", I ignore the typo because the instruction says never correct typos.
+On line 8, I see "this.roomNumber = roomNumber;", so I transcribe it as is.
+On line 9, I see "}", so I transcribe it as is.
+On line 10, I see "@override", so I transcribe it as is.
+On line 11, I see "public double getSalary() {", so I transcribe it as is. Even though "annualsalary" should be "annualSalary", I ignore the typo because the instruction says never correct typos.
+On line 12, I see "return annualsalary;", so I transcribe it as is. Even though "annualsalary" should be "annualSalary", I ignore the typo because the instruction says never correct typos.
+On line 13, I see "}", so I transcribe it as is.
+On line 14, I see "@override", so I transcribe it as is.
+On line 15, I see "pullic void getAllocatedspac {", so I transcribe it as is. Even though the line should be "public void getAllocatedspace {". I ignore the syntax error and typo because the instruction says never correct syntax errors or typos.
+On line 16, I see "system.out.println(name + "'s" + "room number is " + roomNumber) }}", so I transcribe it as is.
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+public class Continuingstaff extends Employee implements Allotedspace
+{   private double annualSalary;
+    private int rooomNumber;
+    String name;
+
+    public Continuingstaff(String name, double annualsalary, int roomNumber)
+    {   this.name = name;
+        this.annualsalary = annualsalary;
+        this.roomNumber = roomNumber;
+    }
+
+    @override
+    public double getSalary() {
+        return annualsalary;
+    }
+
+    @override
+    pullic void getAllocatedspac {
+        system.out.println(name + "'s" + "room number is " + roomNumber) }}
+</answer>

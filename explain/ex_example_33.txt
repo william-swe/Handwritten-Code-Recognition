@@ -1,0 +1,35 @@
+On line 1, I see "import java.util.*;", so I transcribe it as is.
+On line 2, I see "public class sumArrayList {", so I transcribe it as is. I see a strikethough text on this line, so I ignore it.
+On line 3, I see a strikethough line, so I ignore it.
+On line 4, I see a strikethough line, so I ignore it.
+On line 5, I see a strikethough line, so I ignore it.
+On line 6, I see a strikethough line, so I ignore it.
+On line 7, I see a strikethough line, so I ignore it.
+On line 8, I see a strikethough line, so I ignore it.
+On line 9, I see a strikethough text, so I ignore it.
+On line 10, I see "double sumArrayList(ArrayList <? extends Number>) {" so I transcribe it as is. I see a strikethough text on this line, and the word "numbers" right above the strikethough text, so I replace the strikethough text with "numbers", so the method becomes "double sumArrayList(ArrayList <? extends Number> numbers) {".
+Right below line 10, I see an arrow indicating an insertion, and a text "double result = 0;" next to it, so I insert the text "double result = 0;" as line 11.
+On line 12, I see "for(Number number: numbers) {" so I transcribe it as is.
+On line 13, I see "number = (double) number;" so I transcribe it as is.
+On line 14, I see "result += number;" so I transcribe it as is.
+On line 15, I see "}" so I transcribe it as is.
+On line 16, I see "return result;" so I transcribe it as is.
+On line 17, I see "}" so I transcribe it as is.
+Even though there is a syntax error (the class should be closed with a closing brace), I ignore it because the instruction says never correct syntax errors.
+On line 18, I see "// look another page" so I transcribe it as is.
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+import java.util.*;
+
+public class sumArrayList {
+    double sumArrayList(ArrayList <? extends Number> numbers){
+        double result = 0;
+        for (Number number: numbers) {
+            number = (double) number;
+            result += number;
+        }
+        return result;
+    }
+// look another page
+</answer>

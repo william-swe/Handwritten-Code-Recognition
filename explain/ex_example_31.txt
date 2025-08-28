@@ -1,0 +1,36 @@
+On line 1, I see "Line 9: constructor doesn't need to return types.", so I transcribe it as is.
+On line 2, I see "public Liquid(T LiquidType, P LiquidPrice) {", so I transcribe it as is. I notice some spaces before the text, so I indent the text as is.
+On line 3, I see "Line 30: wrong types of comparison", so I transcribe it as is. At first, I see a crossout after the word "Line" and there is a number "30" above it, so I replace the crossout with "30". I do the same for the word "comparison".
+On line 4, I see "for(Liquid<T,P> l: barrel) {" so I transcribe it as is. I see a crossout and the text "<T,P>" right above it, so I replace the crossout with the text. I notice some spaces before the text, so I indent the text as is.
+On line 5, I see a strikethough text, so I ignore it.
+On line 6, I see "if(l.liquidType == liquidType) {", so I transcribe it as is. I notice some spaces before the text, so I indent the text as is.
+On line 7, I see "barrel.remove(1);", so I transcribe it as is. I notice some spaces before the text, so I indent the text as is.
+On line 8, I see "return liquidType + " sold.";", so I transcribe it as is. I notice some spaces before the text, so I indent the text as is.
+On line 9, I see "}", so I transcribe it as is. I notice some spaces before the text, so I indent the text as is.
+On line 10, I see "}", so I transcribe it as is. I notice some spaces before the text, so I indent the text as is.
+On line 11, I see "Line 38: miss the return type", so I transcribe it as is.
+On line 12, I see "public void checkStorage() {", so I transcribe it as is. I notice some spaces before the text, so I indent the text as is.
+On line 13, I see a new line, so I add a line break.
+On line 14, I see "Line 23: miss the new keyword", so I transcribe it as is.
+On line 15, I see "Liquid<T,P> l = new Liquid<T,P>(type, price);", so I transcribe it as is.
+I notice some spaces before the text, so I indent the text as is.
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+Line 9: constructor doesn't need to return types.
+        public Liquid(T LiquidType, P LiquidPrice) {
+
+Line 30: wrong types of comparison
+            for(Liquid<T,P> l: barrel) {
+                if(l.liquidType == liquidType) {
+                    barrel.remove(1);
+                    return liquidType + " sold.";
+                }
+            }
+
+Line 38: miss the return type
+            public void checkStorage() {
+
+Line 23: miss the new keyword
+         Liquid<T,P> l = new Liquid<T,P>(type, price);
+</answer>

@@ -1,0 +1,34 @@
+On line 1, I see "public ContinuingStaff(String name, double annualSalary, int roomNumber) {", so I transcribe it as is. I see a strikethough text between "annualSalary," and "int roomNumber {", so I ignore it.
+On line 2, I see "super(name);", so I transcribe it as is.
+On line 3, I see "this.annualSalary = annualSalary;", so I transcribe it as is.
+On line 4, I see "this.roomNumber = roomNumber;", so I transcribe it as is.
+On line 5, I see "}", so I transcribe it as is.
+On line 6, I see "@override", so I transcribe it as is. Even though this is a typo, I do not correct it because the instruction says never correct typos.
+On line 7, I see "public double getSalary() {", so I transcribe it as is.
+On line 8, I see "return annualSalary;", so I transcribe it as is.
+On line 9, I see "}", so I transcribe it as is.
+On line 10, I see "@override", so I transcribe it as is. Even though this is a typo, I do not correct it because the instruction says never correct typos.
+On line 11, I see "public void getAllocatedSpace() {", so I transcribe it as is.
+On line 12, I see "System.out.println(name + "'s room number is " + roomNumber);", so I transcribe it as is.\
+On line 13, I see "}", so I transcribe it as is.
+On line 14, I see a redundant "}", but I include it because the instruction says never correct syntax errors..
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+public ContinuingStaff(String name, double annualSalary, int roomNumber) {
+    super(name);
+    this.annualSalary = annualSalary;
+    this.roomNumber = roomNumber;
+}
+
+@override
+public double getSalary() {
+    return annualSalary;
+}
+
+@override
+public void getAllocatedSpace() {
+    System.out.println(name + "'s room number is " + roomNumber);
+}
+}
+</answer>

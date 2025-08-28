@@ -1,0 +1,30 @@
+On line 1, I see "public class PalinedromeChecker {", so I transcribe it as is.
+On line 2, I see "public boolean isPalindrome(String str) {", so I transcribe it as is.
+On line 3, I see "int length = str.length();", so I transcribe it as is. Also, I see an insertion sign pointing to a position above this line, with a text group "StringBuilder sb = new StringBuilder(str);", so I insert the text "StringBuilder sb = new StringBuilder(str);" to line 3, and move the text "int length = str.length();" to line 4.
+On line 5, I see "if(length == 0 || length == 1) {" so I transcribe it as is.
+On line 6, I see "return true;", so I transcribe it as is.
+On line 7, I see "}", so I transcribe it as is.
+On line 8, I see "if(sb.charAt(0).equals(sb.charAt(length-1))) {", so I transcribe it as is.
+On line 9, I see "isPalindrome(sb.sub(1, length-2));", so I transcribe it as is.
+On line 10, I see "} else {", so I transcribe it as is.
+On line 11, I see "return false;", so I transcribe it as is.
+On line 12, I see "}", so I transcribe it as is.
+On line 13, I see "}", so I transcribe it as is.
+I reach the end of the image. I see that there is a syntax error as there should be a closing bracket for the class, but I ignore it because the instruction says never correct syntax mistakes.
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+public class PalinedromeChecker {
+    public boolean isPalindrome(String str) {
+        StringBuilder sb = new StringBuilder(str);
+        int length = str.length();
+        if(length == 0 || length == 1) {
+            return true;
+        }
+        if(sb.charAt(0).equals(sb.charAt(length-1))) {
+            isPalindrome(sb.sub(1, length-2));
+        } else {
+            return false;
+        }
+    }
+</answer>

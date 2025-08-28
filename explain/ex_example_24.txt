@@ -1,0 +1,41 @@
+On line 1, I see "import java.util.*;", so I transcribe it as is.
+On line 2, I see "public boolean isPalindrome(string s) {", so I transcribe it as is.
+On line 3, I see "s = ignoreSpace(s);", so I transcribe it as is. I see a strikethough text on this line, so I ignore it.
+On line 4, I see "recursiveHelper(s.toLowerCase, 0, s.length() - 1)" so I transcribe it as is. I see three syntax errors, such as missing parentheses after "s.toLowerCase", missing a "return" keyword, and missing semicolons at the end of the line, but I ignore them, because the instruction says never correct syntax errors.
+On line 5, I see "}", so I transcribe it as is.
+On line 6, I see that there is no code, so I add a blank line.
+On line 7, I see "public boolean recursiveHelper(string s, int first, int last)", so I transcribe it as is.
+On line 8, I see "{   // end case", so I transcribe it as is.
+On line 9, I see "if(first + 1 == last) {", so I transcribe it as is.
+On line 10, I see "if(s.charAt(first) == s.charAt(last)) return true;", so I transcribe it as is. I see two strikethough texts on this line, so I ignore it. I see a letter "s" right below a strikethough text, so I assume it is an insertion text and replace the strikethough text with "s".
+On line 11, I see "else return false; }", so I transcribe it as is.
+On line 12, I see "else { if(s.charAt(first) != s.charAt(last) return false;", so I transcribe it as is. Even though there is a syntax error (missing closing parenthesis after "s.charAt(last)"), I ignore it because the instruction says never correct syntax errors.
+On line 13, I see "else return recursiveHelper(s, first+1, last -1);", so I transcribe it as is.
+On line 14, I see "}", so I transcribe it as is.
+On line 15, I see "}", so I transcribe it as is.
+I see that there is a syntax error as there should be a closing bracket for the class, but I ignore it because the instruction says never correct syntax errors.
+On line 16, I see "public string ignorespace(string s) {", so I transcribe it as is. I see a caret ("^") on this line and a word "static" right below it, so I assume it is an insertion text and replace the caret with "static", so the method becomes "public static string ignoreSpace(string s) {". Even though there is a typo (the method name should be "ignoreSpace" instead of "ignorespace"), and a syntax error (the return type should be "String" instead of "string"), I ignore them because the instruction says never correct syntax errors or typos.
+On line 17, I see "to Page 14", so I transcribe it as is.
+-------------------------------------------------------------
+Putting things together, the final code is:
+<answer>
+import java.util.*;
+
+public boolean isPalindrome(string s) {
+    s = ignoreSpace(s);
+    recursiveHelper(s.toLowerCase, 0, s.length() - 1)
+}
+
+public boolean recursiveHelper(string s, int first, int last) 
+{   // end case
+    if(first + 1 == last) {
+    if(s.charAt(first) == s.charAt(last)) return true;
+    else return false; }
+    else { if(s.charAt(first) != s.charAt(last) return false;
+        else return recursiveHelper(s, first+1, last -1);
+    }
+}
+
+public static string ignoreSpace(string s) {
+to Page 14
+</answer>

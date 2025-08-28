@@ -37,8 +37,8 @@ def collect_levenshtein_distances():
     for base, files in gt_grouped.items():
         ld_table[base + '.txt'] = {}
         for service in services:
-            results_dir = Path(__file__).resolve().parent.parent / 'results' / service / 'validating'
-            # results_dir = Path(__file__).resolve().parent.parent / 'results' / service / 'testing'
+            # results_dir = Path(__file__).resolve().parent.parent / 'results' / service / 'validating'
+            results_dir = Path(__file__).resolve().parent.parent / 'results' / service / 'testing'
             pattern = f'{service}_{base}_comp.txt'
             result_file = results_dir / pattern
             best_nld = ''

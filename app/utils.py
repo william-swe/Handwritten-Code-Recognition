@@ -66,27 +66,28 @@ class OcrService(StrEnum):
     # PSEUDO45 = '[ex][syntax_insertion_claude]_cot_fsp_24_120_sonnet_3_5_latest'
     # PSEUDO43 = '[syntax_insertion_gpt]_zsp_4o_mini'
     # PSEUDO47 = '[ex][syntax_insertion_claude]_cot_fsp_120_sonnet_3_5_latest'
+    PSEUDO50 = 'test'
     
-    AZURE = 'azure'
-    MISTRAL = 'mistral'
-    PSEUDO40 = '[syntax_insertion_gpt]_simple_prompt_4o_mini'
-    PSEUDO49 = '[syntax_insertion_gpt]_simple_prompt_4_1'
-    PSEUDO39 = '[syntax_insertion_claude]_simple_prompt_sonnet_3_5_latest'
-    PSEUDO43 = '[syntax_insertion_claude]_cot_zsp_sonnet_3_5_latest'
+    # AZURE = 'azure'
+    # MISTRAL = 'mistral'
+    # PSEUDO40 = '[syntax_insertion_gpt]_simple_prompt_4o_mini'
+    # PSEUDO49 = '[syntax_insertion_gpt]_simple_prompt_4_1'
+    # PSEUDO39 = '[syntax_insertion_claude]_simple_prompt_sonnet_3_5_latest'
+    # PSEUDO43 = '[syntax_insertion_claude]_cot_zsp_sonnet_3_5_latest'
     PSEUDO48 = '[ex][syntax_insertion_claude]_cot_fsp_109_120_125_sonnet_3_5_latest'
 
 # Tuple of compressed image names to process for OCR (manually input)
 PROCESSED_OCR_IMAGES = (
-    'exam_103_comp.png',
-    'exam_104_comp.png',
-    'exam_105_comp.png',
+    # 'exam_103_comp.png',
+    # 'exam_104_comp.png',
+    # 'exam_105_comp.png',
     'exam_106_comp.png',
-    'exam_108_comp.png',
-    'exam_113_comp.png',
-    'exam_114_comp.png',
-    'exam_116_comp.png',
-    'exam_118_comp.png',
-    'exam_128_comp.png',
+    # 'exam_108_comp.png',
+    # 'exam_113_comp.png',
+    # 'exam_114_comp.png',
+    # 'exam_116_comp.png',
+    # 'exam_118_comp.png',
+    # 'exam_128_comp.png',
     
     # 'exam_109_comp.png',
     # 'exam_120_comp.png',

@@ -5,7 +5,7 @@ from pathlib import Path
 from utils import OcrService, get_base64_encoded_image, claude_analyse_read
 
 # Define the OCR service being used and its model
-SERVICE = OcrService.PSEUDO48
+SERVICE = OcrService.PSEUDO50
 MODEL_NAME = "claude-3-5-sonnet-latest"
 # MODEL_NAME = "claude-opus-4-0"
 
@@ -30,9 +30,9 @@ complex_prompt = """
 # List of example numbers
 examples = tuple([
     # 24, # exam_24
-    109, # exam_109
-    120, # exam_120
-    125, # exam_125
+    # 109, # exam_109
+    # 120, # exam_120
+    # 125, # exam_125
 ])
 
 # Prepare example file paths and load their contents

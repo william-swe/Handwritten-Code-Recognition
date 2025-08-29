@@ -25,7 +25,7 @@ mistralai==1.8.2
 numpy==2.3.1
 openai==1.91.0
 packaging==25.0
-pillow==11.2.1
+pillow==11.3.0
 pydantic==2.11.7
 pydantic_core==2.33.2
 pyparsing==3.2.3
